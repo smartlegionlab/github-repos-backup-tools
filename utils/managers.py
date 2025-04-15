@@ -20,13 +20,14 @@ from utils.progress_bar import ProgressBar
 
 
 class AppManager:
-    def __init__(self, config, printer, config_parser, github_data_master):
+    def __init__(self, config, printer, config_parser, github_data_master, timeout=20):
         self.config = config
         self.printer = printer
         self.config_parser = config_parser
         self.github_data_master = github_data_master
         self.shutdown_flag = False
         self.verbose = False
+        self.timeout = timeout
 
     def graceful_shutdown(self):
         if self.shutdown_flag:
@@ -42,6 +43,9 @@ class AppManager:
         parser.add_argument("-r", action="store_true", help="Clone repositories")
         parser.add_argument("-g", action="store_true", help="Clone gists")
         parser.add_argument("--archive", action="store_true", help="Create archive")
+        parser.add_argument("--timeout", type=int, default=20,
+                            help="Timeout for git operations in seconds (default: 20)",
+                            choices=range(10, 601))
         mutex_group = parser.add_mutually_exclusive_group()
         mutex_group.add_argument("--shutdown", action="store_true", help="Shutdown after completion")
         mutex_group.add_argument("--reboot", action="store_true", help="Reboot after completion")
@@ -79,7 +83,12 @@ class AppManager:
 
     @staticmethod
     def create_item_path(target_dir: str, item_name: str) -> str:
-        return os.path.join(target_dir, item_name)
+        item_path = os.path.normpath(os.path.join(target_dir, os.path.basename(item_name)))
+
+        if not item_path.startswith(os.path.abspath(target_dir) + os.sep):
+            raise ValueError(f"Potential path traversal attack! Blocked: {item_path}")
+
+        return item_path
 
     def _git_clone(self, url: str, item_path: str) -> bool:
         try:
@@ -88,7 +97,7 @@ class AppManager:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=20
+                timeout=self.timeout
             )
             if result.returncode == 0:
                 if self.verbose:
@@ -115,7 +124,7 @@ class AppManager:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=20
+                timeout=self.timeout
             )
             if result.returncode == 0:
                 if self.verbose:
@@ -148,7 +157,8 @@ class AppManager:
 
         print('Parsing arguments:\n')
         args = self._parse_arguments()
-
+        self.timeout = args.timeout
+        print(f'Git operations timeout: {self.timeout} seconds')
         clone_repos = args.r
         clone_gists = args.g
         make_archive = args.archive
