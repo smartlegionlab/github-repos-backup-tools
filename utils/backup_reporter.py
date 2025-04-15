@@ -27,7 +27,7 @@ class BackupReporter:
         report_lines.append(f"║ {icon} {item_type.capitalize()}: {success}/{total} cloned {status}")
 
         if failed_items:
-            report_lines.append("║ Failed {item_type}:")
+            report_lines.append(f"║ Failed {item_type}:")
             for item_name in list(failed_items.keys())[:max_errors_to_show]:
                 shortened_name = f"{item_name[:40]}..." if len(item_name) > 40 else item_name
                 report_lines.append(f"║   - {shortened_name}")
@@ -55,9 +55,12 @@ class BackupReporter:
             backup_path: str
     ) -> str:
         try:
-            report = [
+            failed_repos = failed_repos or {}
+            failed_gists = failed_gists or {}
+            repos_data = repos_data or {}
+            gists_data = gists_data or {}
 
-            ]
+            report = []
 
             if clone_repos:
                 report.extend(
