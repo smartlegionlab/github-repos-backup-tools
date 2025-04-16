@@ -107,7 +107,7 @@ Backups are organized in your home directory:
 ## 🔧 Technical Details
 
 - **Retry Logic**: 5 attempts for each clone/update operation
-- **Timeout**: 20 seconds per git operation
+- **Timeout**: 30 seconds per git operation
 - **Error Handling**: Automatic cleanup of failed clones
 - **Progress Tracking**: Real-time visual feedback
 - **System Integration**: Supports shutdown/reboot commands

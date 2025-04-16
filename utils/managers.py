@@ -87,7 +87,7 @@ class AppManager:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=20
+                timeout=30
             )
             if result.returncode == 0:
                 if self.verbose:
@@ -114,7 +114,7 @@ class AppManager:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=20
+                timeout=30
             )
             if result.returncode == 0:
                 if self.verbose:
