@@ -12,4 +12,4 @@ class Config:
     name = 'Github Repositories Backup Tools'
     url = 'https://github.com/smartlegionlab/'
     info = 'Copyright © 2018-2025, A.A. Suvorov'
-    help_url = 'https://github.com/smartlegionlab/github_repos_backup_tools/'
+    help_url = 'https://github.com/smartlegionlab/github-repos-backup-tools/'

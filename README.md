@@ -1,8 +1,8 @@
-# GitHub Repositories Backup Tools <sup>v0.9.1</sup>
+# GitHub Repositories Backup Tools <sup>v0.9.2</sup>
 
-![GitHub top language](https://img.shields.io/github/languages/top/smartlegionlab/github_repos_backup_tools)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/smartlegionlab/github_repos_backup_tools)](https://github.com/smartlegionlab/github_repos_backup_tools/)
-[![GitHub](https://img.shields.io/github/license/smartlegionlab/github_repos_backup_tools)](https://github.com/smartlegionlab/github_repos_backup_tools/blob/master/LICENSE)
+![GitHub top language](https://img.shields.io/github/languages/top/smartlegionlab/github-repos-backup-tools)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/smartlegionlab/github-repos-backup-tools)](https://github.com/smartlegionlab/github-repos-backup-tools/)
+[![GitHub](https://img.shields.io/github/license/smartlegionlab/github-repos-backup-tools)](https://github.com/smartlegionlab/github-repos-backup-tools/blob/master/LICENSE)
 
 > Professional solution for automatic cloning and backup of GitHub repositories and gists with enhanced reliability
 
@@ -42,8 +42,8 @@
 
 ### 1. Installation
 ```bash
-git clone https://github.com/smartlegionlab/github_repos_backup_tools.git
-cd github_repos_backup_tools
+git clone https://github.com/smartlegionlab/github-repos-backup-tools.git
+cd github-repos-backup-tools
 ```
 
 ### 2. Configuration
@@ -80,14 +80,14 @@ ssh -T git@github.com
 ## 💻 Usage Options
 
 | Command       | Description                              |
-|--------------|-----------------------------------------|
-| `-r`         | Clone all repositories                  |
-| `-g`         | Clone all gists                         |
-| `--archive`  | Create compressed backup archive        |
-| `--verbose`  | Show detailed debug output              |
-| `--shutdown` | Shutdown computer after completion      |
-| `--reboot`   | Restart computer after completion       |
-| `--timeout N`| Set timeout for Git operations (seconds)|
+|---------------|------------------------------------------|
+| `-r`          | Clone all repositories                   |
+| `-g`          | Clone all gists                          |
+| `--archive`   | Create compressed backup archive         |
+| `--verbose`   | Show detailed debug output               |
+| `--shutdown`  | Shutdown computer after completion       |
+| `--reboot`    | Restart computer after completion        |
+| `--timeout N` | Set timeout for Git operations (seconds) |
 
 **Common Command Combinations:**
 ```bash
@@ -141,7 +141,7 @@ A: Just run the tool again - it automatically does `git pull`
 
 ## 📝 Changelog
 
-**v0.9.1 Updates:**
+**v0.9.2 Updates:**
 - Implemented configurable operation timeout (`--timeout`)
 - Added path sanitization and validation
 - Fixed f-string formatting in backup reports 
@@ -151,8 +151,8 @@ A: Just run the tool again - it automatically does `git pull`
 ---
 
 **Author**: A.A. Suvorov  
-**License**: [BSD 3-Clause "New" or "Revised" License](https://github.com/smartlegionlab/github_repos_backup_tools/blob/master/LICENSE)  
-**Support**: Open issue on [GitHub](https://github.com/smartlegionlab/github_repos_backup_tools/issues)
+**License**: [BSD 3-Clause "New" or "Revised" License](https://github.com/smartlegionlab/github-repos-backup-tools/blob/master/LICENSE)  
+**Support**: Open issue on [GitHub](https://github.com/smartlegionlab/github-repos-backup-tools/issues)
 
 **Example output without using the `--verbose` flag:**
 
