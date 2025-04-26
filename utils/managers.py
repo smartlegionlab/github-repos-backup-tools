@@ -44,8 +44,7 @@ class AppManager:
         parser.add_argument("-g", action="store_true", help="Clone gists")
         parser.add_argument("--archive", action="store_true", help="Create archive")
         parser.add_argument("--timeout", type=int, default=20,
-                            help="Timeout for git operations in seconds (default: 20)",
-                            choices=range(10, 601))
+                            help="Timeout for git operations in seconds (default: 30)",)
         mutex_group = parser.add_mutually_exclusive_group()
         mutex_group.add_argument("--shutdown", action="store_true", help="Shutdown after completion")
         mutex_group.add_argument("--reboot", action="store_true", help="Reboot after completion")
