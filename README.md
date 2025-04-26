@@ -17,6 +17,9 @@
 - **System Control** - Option to shutdown/reboot after completion
 - **Real-time Monitoring** - Improved progress bar with statistics
 - **Cross-platform** - Works on Linux and Termux (Android)
+- **Configurable Timeout** - Set custom timeout for Git operations (`--timeout N`)
+- **Security** - Path traversal attack protection
+- **Error Reporting** - Detailed failure reports with retry status
 
 ## 🚨 Important Notice
 
@@ -25,6 +28,15 @@
 - Added reboot() method similar to shutdown() but for system restart
 - Changed the priority of receiving and checking information when initializing the application
 - Fixed incorrect display of some user interface elements
+
+
+## 🖥 System Requirements
+
+- Python 3.8+
+- Git 2.20+
+- SSH client (for authentication)
+- 100MB+ free disk space (varies by repository size)
+
 
 ## 🚀 Quick Start Guide
 
@@ -67,14 +79,15 @@ ssh -T git@github.com
 
 ## 💻 Usage Options
 
-| Command       | Description                                  |
-|--------------|--------------------------------------------|
-| `-r`         | Clone all repositories                     |
-| `-g`         | Clone all gists                           |
-| `--archive`  | Create compressed backup archive          |
-| `--verbose`  | Show detailed debug output               |
+| Command       | Description                              |
+|--------------|-----------------------------------------|
+| `-r`         | Clone all repositories                  |
+| `-g`         | Clone all gists                         |
+| `--archive`  | Create compressed backup archive        |
+| `--verbose`  | Show detailed debug output              |
 | `--shutdown` | Shutdown computer after completion      |
 | `--reboot`   | Restart computer after completion       |
+| `--timeout N`| Set timeout for Git operations (seconds)|
 
 **Common Command Combinations:**
 ```bash
@@ -111,6 +124,9 @@ Backups are organized in your home directory:
 - **Error Handling**: Automatic cleanup of failed clones
 - **Progress Tracking**: Real-time visual feedback
 - **System Integration**: Supports shutdown/reboot commands
+- **Timeout**: Configurable per operation (default: 20s)
+- **Security**: Strict path validation to prevent directory traversal
+- **Error Handling**: Clean failure tracking with itemized reports
 
 ## ❓ Frequently Asked Questions
 
@@ -126,11 +142,12 @@ A: Just run the tool again - it automatically does `git pull`
 ## 📝 Changelog
 
 **v0.9.1 Updates:**
-- Added new --reboot flag that performs system reboot after completion
-- Made --reboot and --shutdown mutually exclusive using argparse group
-- Added reboot() method similar to shutdown() but for system restart
-- Changed the priority of receiving and checking information when initializing the application
-- Fixed incorrect display of some user interface elements
+- Implemented configurable operation timeout (`--timeout`)
+- Added path sanitization and validation
+- Fixed f-string formatting in backup reports 
+- Improved UI element rendering stability
+- Added forced directory structure enforcement
+
 ---
 
 **Author**: A.A. Suvorov  
