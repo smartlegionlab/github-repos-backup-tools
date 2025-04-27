@@ -20,7 +20,7 @@ from utils.progress_bar import ProgressBar
 
 
 class AppManager:
-    def __init__(self, config, printer, config_parser, github_data_master, timeout=20):
+    def __init__(self, config, printer, config_parser, github_data_master, timeout=30):
         self.config = config
         self.printer = printer
         self.config_parser = config_parser
