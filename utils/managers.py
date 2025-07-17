@@ -16,11 +16,22 @@ import platform
 
 from utils.backup_reporter import BackupReporter
 from utils.archive_creator import ArchiveCreator
+from utils.config import Config
+from utils.github_tools import GitHubDataMaster
+from utils.parsers import ConfigParser
+from utils.printers import SmartPrinter
 from utils.progress_bar import ProgressBar
 
 
 class AppManager:
-    def __init__(self, config, printer, config_parser, github_data_master, timeout=30):
+    def __init__(
+            self,
+            config=Config(),
+            printer=SmartPrinter(),
+            config_parser=ConfigParser(),
+            github_data_master=GitHubDataMaster(),
+            timeout=30
+    ):
         self.config = config
         self.printer = printer
         self.config_parser = config_parser
