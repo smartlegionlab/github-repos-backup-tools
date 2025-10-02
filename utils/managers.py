@@ -101,14 +101,14 @@ class AppManager:
             github_date_utc = github_date.replace(tzinfo=None)
 
             time_diff = github_date_utc - local_date_utc
-            needs_update = time_diff.total_seconds() > 30
+            needs_update = time_diff.total_seconds() > 300
 
             if self.verbose:
                 print(f"🔍 Date comparison:")
                 print(f"   GitHub (UTC): {github_date_utc}")
                 print(f"   Local (UTC):  {local_date_utc}")
                 print(f"   Difference:   {time_diff.total_seconds()} sec")
-                print(f"   Needs update: {needs_update} (threshold: 30 sec)")
+                print(f"   Needs update: {needs_update} (threshold: 300 sec)")
 
             return needs_update
 
