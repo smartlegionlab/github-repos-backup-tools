@@ -87,7 +87,10 @@ class GitHubDataMaster:
                                 return data_dict
                             for item in data:
                                 if is_repo:
-                                    data_dict[item['full_name']] = item['ssh_url']
+                                    data_dict[item['full_name']] = {
+                                        'ssh_url': item['ssh_url'],
+                                        'pushed_at': item['pushed_at']
+                                    }
                                 else:
                                     data_dict[item['id']] = item['git_pull_url']
                             page += 1

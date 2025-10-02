@@ -13,6 +13,7 @@ import argparse
 import sys
 from typing import Dict
 import platform
+from datetime import datetime, timezone
 
 from utils.backup_reporter import BackupReporter
 from utils.archive_creator import ArchiveCreator
@@ -48,6 +49,74 @@ class AppManager:
         self.stop()
         sys.exit(0)
 
+    def _get_local_commit_date(self, item_path: str) -> datetime:
+        try:
+            git_dir = os.path.join(item_path, '.git')
+            if not os.path.exists(git_dir):
+                return datetime.min
+
+            check_result = subprocess.run(
+                ['git', '-C', item_path, 'rev-parse', '--verify', 'HEAD'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=5
+            )
+
+            if check_result.returncode != 0:
+                return datetime.min
+
+            result = subprocess.run(
+                ['git', '-C', item_path, 'show', '-s', '--format=%ci', 'HEAD'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=5
+            )
+
+            if result.returncode == 0 and result.stdout.strip():
+                date_line = result.stdout.strip().split('\n')[0]
+                if date_line:
+                    try:
+                        date_str_clean = date_line.replace(' +', '+').replace(' -', '-')
+                        return datetime.fromisoformat(date_str_clean)
+                    except ValueError:
+                        pass
+
+            return datetime.min
+
+        except Exception:
+            return datetime.min
+
+    def _needs_update(self, item_path: str, github_pushed_at: str) -> bool:
+        try:
+            local_date = self._get_local_commit_date(item_path)
+            github_date = datetime.fromisoformat(github_pushed_at.replace('Z', '+00:00'))
+
+            if local_date.tzinfo is not None:
+                local_date_utc = local_date.astimezone(timezone.utc).replace(tzinfo=None)
+            else:
+                local_date_utc = local_date
+
+            github_date_utc = github_date.replace(tzinfo=None)
+
+            time_diff = github_date_utc - local_date_utc
+            needs_update = time_diff.total_seconds() > 30
+
+            if self.verbose:
+                print(f"🔍 Date comparison:")
+                print(f"   GitHub (UTC): {github_date_utc}")
+                print(f"   Local (UTC):  {local_date_utc}")
+                print(f"   Difference:   {time_diff.total_seconds()} sec")
+                print(f"   Needs update: {needs_update} (threshold: 30 sec)")
+
+            return needs_update
+
+        except Exception as e:
+            if self.verbose:
+                print(f"⚠️ Date check error, will update: {str(e)}")
+            return True
+
     @staticmethod
     def _parse_arguments():
         parser = argparse.ArgumentParser(description="GitHub Repos Backup Tools")
@@ -55,7 +124,7 @@ class AppManager:
         parser.add_argument("-g", action="store_true", help="Clone gists")
         parser.add_argument("--archive", action="store_true", help="Create archive")
         parser.add_argument("--timeout", type=int, default=30,
-                            help="Timeout for git operations in seconds (default: 30)",)
+                            help="Timeout for git operations in seconds (default: 30)", )
         mutex_group = parser.add_mutually_exclusive_group()
         mutex_group.add_argument("--shutdown", action="store_true", help="Shutdown after completion")
         mutex_group.add_argument("--reboot", action="store_true", help="Reboot after completion")
@@ -211,22 +280,33 @@ class AppManager:
 
         if clone_repos:
             repos_target_dir = os.path.join(path, "repositories")
-            self.clone_items(repos_target_dir, self.github_data_master.fetch_repositories, "repositories")
+            repos_failed = self.clone_items(repos_target_dir, self.github_data_master.fetch_repositories,
+                                            "repositories")
 
         if clone_gists:
             gists_target_dir = os.path.join(path, "gists")
-            self.clone_items(gists_target_dir, self.github_data_master.fetch_gists, "gists")
+            gists_failed = self.clone_items(gists_target_dir, self.github_data_master.fetch_gists, "gists")
 
         if make_archive:
             self._create_archive(login)
 
         try:
+            repos_data_for_report = {}
+            if hasattr(self.github_data_master, "repositories"):
+                for name, data in self.github_data_master.repositories.items():
+                    if isinstance(data, dict):
+                        repos_data_for_report[name] = data['ssh_url']
+                    else:
+                        repos_data_for_report[name] = data
+
+            gists_data_for_report = self.github_data_master.gists
+
             report = BackupReporter.generate(
                 clone_repos=clone_repos,
                 clone_gists=clone_gists,
                 make_archive=make_archive,
-                repos_data=getattr(self.github_data_master, "repositories", {}),
-                gists_data=getattr(self.github_data_master, "gists", {}),
+                repos_data=repos_data_for_report,
+                gists_data=gists_data_for_report,
                 failed_repos=repos_failed,
                 failed_gists=gists_failed,
                 backup_path=path
@@ -263,21 +343,48 @@ class AppManager:
         failed_dict = {}
         failed_count = 0
         progress_bar = ProgressBar()
-        for index, (name, url) in enumerate(items.items(), start=1):
+
+        for index, (name, item_data) in enumerate(items.items(), start=1):
             if not self.verbose:
-                progress_bar.update(index, count, failed_count, f"Cloning: {name}")
+                progress_bar.update(index, count, failed_count, f"Processing: {name}")
             else:
-                self.printer.print_framed(f'{index}/{count}/{failed_count}: Cloning: {name}')
+                self.printer.print_framed(f'{index}/{count}/{failed_count}: Processing: {name}')
+
+            if item_type == "repositories":
+                if isinstance(item_data, dict):
+                    url = item_data['ssh_url']
+                    pushed_at = item_data.get('pushed_at')
+                else:
+                    url = item_data
+                    pushed_at = None
+            else:
+                url = item_data
+                pushed_at = None
 
             item_path = self.create_item_path(target_dir, name)
 
             if os.path.exists(item_path):
-                success = self._git_pull(item_path)
-                if not success:
-                    if self.verbose:
-                        print(f"⚠️ Pull failed. Removing and re-cloning: \n{item_path}")
-                    shutil.rmtree(item_path)
-                    success = self._git_clone(url, item_path)
+                if pushed_at:
+                    needs_update = self._needs_update(item_path, pushed_at)
+
+                    if not needs_update:
+                        success = True
+                        if self.verbose:
+                            print(f"✅ Already up to date: {name}")
+                    else:
+                        success = self._git_pull(item_path)
+                        if not success:
+                            if self.verbose:
+                                print(f"⚠️ Pull failed. Removing and re-cloning: \n{item_path}")
+                            shutil.rmtree(item_path)
+                            success = self._git_clone(url, item_path)
+                else:
+                    success = self._git_pull(item_path)
+                    if not success:
+                        if self.verbose:
+                            print(f"⚠️ Pull failed. Removing and re-cloning: \n{item_path}")
+                        shutil.rmtree(item_path)
+                        success = self._git_clone(url, item_path)
             else:
                 success = self._git_clone(url, item_path)
 
