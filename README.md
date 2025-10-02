@@ -1,4 +1,4 @@
-# GitHub Repositories Backup Tools <sup>v0.9.2</sup>
+# GitHub Repositories Backup Tools <sup>v0.9.3</sup>
 
 ![GitHub top language](https://img.shields.io/github/languages/top/smartlegionlab/github-repos-backup-tools)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/smartlegionlab/github-repos-backup-tools)](https://github.com/smartlegionlab/github-repos-backup-tools/)
@@ -141,7 +141,7 @@ A: Just run the tool again - it automatically does `git pull`
 
 ## 📝 Changelog
 
-**v0.9.2 Updates:**
+**v0.9.3 Updates:**
 - Implemented configurable operation timeout (`--timeout`)
 - Added path sanitization and validation
 - Fixed f-string formatting in backup reports 
@@ -328,7 +328,7 @@ Retrying failed gists: 1 remaining
 /home/user/login_github_backup/gists/name2
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------ https://github.com/smartlegionlab/ ------------------------------------------
------------------------------------------- Copyright © 2018-2025, A.A. Suvorov -----------------------------------------
+------------------------------------------ Copyright © 2025, Alexander Suvorov -----------------------------------------
 ************************************************************************************************************************
 ```
 
@@ -349,10 +349,9 @@ Retrying failed gists: 1 remaining
 
 ***
 
-## Copyright:
-    --------------------------------------------------------
+## License
+    
     Licensed under the terms of the BSD 3-Clause License
     (see LICENSE for details).
-    Copyright © 2018-2025, A.A. Suvorov
+    Copyright © 2025, Alexander Suvorov
     All rights reserved.
-    --------------------------------------------------------
