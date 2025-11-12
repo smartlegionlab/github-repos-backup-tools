@@ -43,6 +43,8 @@
 - **Configurable Timeout** - Set custom timeout for Git operations (`--timeout N`)
 - **Security** - Path traversal attack protection and secure token storage
 - **Detailed Reporting** - Comprehensive success/failure reports
+- **Instant Process Termination** - Single Ctrl+C stops all operations immediately
+- **Git Repository Health Checks** - Prevents broken clones with integrity validation
 
 ## 🖥 System Requirements
 
@@ -277,53 +279,53 @@ THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. Use at your own r
 
 
 ==================================================
-STEP 1: Arguments Parsing
+STEP 1: 🔧 Arguments Parsing
 ==================================================
 🔧 Parsing command line arguments...
 📋 Parsed arguments:
-   Backup: 📦 Repositories, 📝 Gists, 🗄 Archive
+   Backup: 📦 Repositories, 📝 Gists
    Timeout: 30s
    Verbose: ❌ Disabled
    Power: ❌ No action
-✅ Step 1 completed: Arguments Parsing
+✅ Step 1 completed: 🔧 Arguments Parsing
 
 ==================================================
-STEP 2: Configuration Setup
+STEP 2: ⚙️ Configuration Setup
 ==================================================
 🔧 Checking and setting up configuration directories and tokens...
-📁 Configuration directory: /home/user/.config/github_repos_backup_tools
+📁 Configuration directory: /home/user_name/.config/github_repos_backup_tools
 ✅ Token found in configuration
 ✅ Token received successfully
-✅ Step 2 completed: Configuration Setup
+✅ Step 2 completed: ⚙️ Configuration Setup
 
 ==================================================
-STEP 3: GitHub Authentication
+STEP 3: 🔑 GitHub Authentication
 ==================================================
 🔧 Authenticating with GitHub...
 🔑 Validating GitHub token...
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.4s)
+   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.5s)
 ✅ Authenticated as: github_user_name
-✅ Step 3 completed: GitHub Authentication
+✅ Step 3 completed: 🔑 GitHub Authentication
 
 ==================================================
-STEP 4: Directory Setup
+STEP 4: 📁 Directory Setup
 ==================================================
 🔧 Creating backup directory structure...
-📁 Main backup directory: /home/user/github_user_name_github_backup
+📁 Main backup directory: /home/user_name/github_user_name_github_backup
 📂 Creating subdirectories:
    ✅ repositories/
    ✅ gists/
-✅ Step 4 completed: Directory Setup
+✅ Step 4 completed: 📁 Directory Setup
 
 ==================================================
-STEP 5: Repositories Operations
+STEP 5: 🔄 Repositories Operations
 ==================================================
 🔧 Fetching and cloning/updating repositories...
 📦 Fetching repositories...
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.8s)
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (1.0s)
    🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.9s)
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.4s)
+   🔄 Attempt 1/3 (timeout: 30s)... ✅ (1.0s)
+   🔄 Attempt 1/3 (timeout: 30s)... ✅ (1.0s)
+   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.5s)
 ✅ Found 100 repositories
 
 📦 Processing 100 repositories...
@@ -331,14 +333,14 @@ STEP 5: Repositories Operations
 🔄 Retrying 1 failed repositories...
 
 🔄 Retrying 1 failed repositories...
-[##########] 100.00% | 1/1 | Failed: 0 | Retrying: github_user_name/SmartPassGe...
+[##########] 100.00% | 1/1 | Failed: 0 | Retrying: github_user_name/github-ssh-...
 ✅ All repositories processed successfully after retry!
 
 ✅ All repositories processed successfully after retry
-✅ Step 5 completed: Repositories Operations
+✅ Step 5 completed: 🔄 Repositories Operations
 
 ==================================================
-STEP 6: Gists Operations
+STEP 6: 🔄 Gists Operations
 ==================================================
 🔧 Fetching and cloning/updating gists...
 📝 Fetching gists...
@@ -350,10 +352,10 @@ STEP 6: Gists Operations
 [##########] 100.00% | 1/1 | Failed: 0 | Processing: a2e7733c3ba32963b7c0985e...
 ✅ Cloning/updating gists completed successfully!
 
-✅ Step 6 completed: Gists Operations
+✅ Step 6 completed: 🔄 Gists Operations
 
 ==================================================
-STEP 7: Verification
+STEP 7: ✅ Verification
 ==================================================
 🔧 Verifying that all repositories and gists are properly cloned/updated...
 📊 Repositories verification:
@@ -365,10 +367,10 @@ STEP 7: Verification
    Valid: 1
    Missing: 0
 ✅ All items verified successfully!
-✅ Step 7 completed: Verification
+✅ Step 7 completed: ✅ Verification
 
 ==================================================
-STEP 8: Report
+STEP 8: 📊 Report
 ==================================================
 🔧 Generating backup report...
 
@@ -389,26 +391,25 @@ STEP 8: Report
    🎉 All gists processed successfully!
 
 💾 BACKUP LOCATION:
-   /home/user/github_user_name_github_backup
+   /home/user_name/github_user_name_github_backup
 
 🎉 SUCCESS: All backup operations completed successfully!
 ============================================================
-✅ Step 8 completed: Report
+✅ Step 8 completed: 📊 Report
 
 ==================================================
-STEP 9: Archive Creation
+STEP 9: 🗄️ Archive Creation
 ==================================================
 🔧 Creating backup archive...
-🗄 Creating backup archive...
-✅ Archive created successfully: /home/user/github_github_user_name_2025-11-13_05_40_34.zip
-✅ Step 9 completed: Archive Creation
+⚠️ Archive creation not requested - skipping
+✅ Step 9 completed: 🗄️ Archive Creation
 
 ==================================================
-STEP 10: System Actions
+STEP 10: ⚡ System Actions
 ==================================================
 🔧 Executing system actions (shutdown/reboot)...
 ⚠️ No system actions requested - skipping
-✅ Step 10 completed: System Actions
+✅ Step 10 completed: ⚡ System Actions
 --------------------------------------------------------------------------------
 ---------------------- https://github.com/smartlegionlab/ ----------------------
 --------------------- Copyright © 2025, Alexander Suvorov ----------------------

@@ -108,7 +108,7 @@ class VerificationStep(BaseStep):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=5
+                timeout=10
             )
             return result.returncode == 0
         except Exception:

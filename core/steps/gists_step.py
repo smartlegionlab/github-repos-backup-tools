@@ -160,7 +160,11 @@ class GistsStep(BaseStep):
                 text=True,
                 timeout=timeout
             )
-            return result.returncode == 0
+
+            if result.returncode == 0:
+                return self._verify_git_repo_health(item_path)
+            return False
+
         except subprocess.TimeoutExpired:
             return False
         except Exception:
@@ -175,8 +179,41 @@ class GistsStep(BaseStep):
                 text=True,
                 timeout=timeout
             )
-            return result.returncode == 0
+
+            if result.returncode == 0:
+                return self._verify_git_repo_health(item_path)
+            return False
+
         except subprocess.TimeoutExpired:
             return False
         except Exception:
+            return False
+
+    def _verify_git_repo_health(self, repo_path: str) -> bool:
+        try:
+            result1 = subprocess.run(
+                ['git', '-C', repo_path, 'rev-parse', '--git-dir'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=10
+            )
+
+            result2 = subprocess.run(
+                ['git', '-C', repo_path, 'log', '--oneline', '-1'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=10
+            )
+
+            health_ok = result1.returncode == 0 and result2.returncode == 0
+
+            if not health_ok:
+                print(f"⚠️ Gist health check failed: {os.path.basename(repo_path)}")
+
+            return health_ok
+
+        except Exception as e:
+            print(f"⚠️ Gist health check error {os.path.basename(repo_path)}: {e}")
             return False
