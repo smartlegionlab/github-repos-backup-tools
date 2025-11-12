@@ -10,6 +10,7 @@ import time
 import urllib.request
 import urllib.error
 import json
+from typing import Optional
 
 
 class GitHubDataMaster:
@@ -31,114 +32,92 @@ class GitHubDataMaster:
     def headers(self) -> dict:
         return {'Authorization': f'token {self._token}'}
 
-    def fetch_user_data(self, max_retries=5):
-        url = "https://api.github.com/user"
+    def _make_request_with_retry(self, url: str, max_retries: int = 3, timeout: int = 30) -> Optional[dict]:
         retries = 0
 
         while retries < max_retries:
+            current_retry = retries + 1
+            print(f"   🔄 Attempt {current_retry}/{max_retries} (timeout: {timeout}s)...", end=' ')
+
             req = urllib.request.Request(url, headers=self.headers)
             try:
-                with urllib.request.urlopen(req) as response:
+                start_time = time.time()
+                with urllib.request.urlopen(req, timeout=timeout) as response:
+                    request_time = time.time() - start_time
+
                     if response.status == 200:
+                        print(f"✅ ({request_time:.1f}s)")
                         data = json.loads(response.read().decode('utf-8'))
-                        self.login = data.get('login')
-                        return
+                        return data
                     else:
-                        raise Exception(f"⚠️ Error: {response.status} - {response.read().decode('utf-8')}")
+                        print(f"❌ HTTP {response.status}")
+                        raise Exception(f"Error: {response.status}")
+
             except urllib.error.HTTPError as e:
-                print(f"⚠️ HTTP error occurred: {e.code} - {e.reason}")
+                print(f"❌ HTTP {e.code}")
+                if e.code == 401:
+                    return None
             except urllib.error.URLError as e:
-                print(f"⚠️ URL error occurred: {e.reason}")
+                print(f"❌ Network: {e.reason}")
             except Exception as e:
-                print(f"⚠️ An unexpected error occurred: {str(e)}")
+                print(f"❌ Error: {str(e)}")
 
             retries += 1
             if retries < max_retries:
-                print()
-                print(f"✅ Retrying... ({retries}/{max_retries})")
-                print()
-                time.sleep(2)
+                wait_time = 2 ** retries
+                print(f"   ⏳ Waiting {wait_time}s before retry...")
+                time.sleep(wait_time)
 
-        print("⚠️ Max retries reached. Failed to fetch user data.")
+        print(f"❌ Max retries ({max_retries}) reached")
+        return None
 
-    def fetch_repositories(self, max_retries=3):
+    def fetch_user_data(self, max_retries: int = 3, timeout: int = 30) -> bool:
+        url = "https://api.github.com/user"
+        data = self._make_request_with_retry(url, max_retries, timeout)
+
+        if data:
+            self.login = data.get('login')
+            return True
+        return False
+
+    def fetch_repositories(self, max_retries: int = 3, timeout: int = 30):
         url = "https://api.github.com/user/repos"
-        self.repositories = self._fetch_data(url, is_repo=True, max_retries=max_retries)
-
-    def fetch_gists(self, max_retries=5):
-        url = "https://api.github.com/gists"
-        self.gists = self._fetch_data(url, is_repo=False, max_retries=max_retries)
-
-    def _fetch_data(self, url: str, is_repo: bool, max_retries=3) -> dict:
-        data_dict = {}
         page = 1
         per_page = 100
+        self.repositories = {}
 
         while True:
-            retries = 0
-            while retries < max_retries:
-                paginated_url = f"{url}?page={page}&per_page={per_page}"
-                req = urllib.request.Request(paginated_url, headers=self.headers)
-                try:
-                    with urllib.request.urlopen(req) as response:
-                        if response.status == 200:
-                            data = json.loads(response.read().decode('utf-8'))
-                            if not data:
-                                return data_dict
-                            for item in data:
-                                if is_repo:
-                                    data_dict[item['full_name']] = {
-                                        'ssh_url': item['ssh_url'],
-                                        'pushed_at': item['pushed_at']
-                                    }
-                                else:
-                                    data_dict[item['id']] = item['git_pull_url']
-                            page += 1
-                            break
-                        else:
-                            raise Exception(f"Error: {response.status} - {response.read().decode('utf-8')}")
-                except urllib.error.HTTPError as e:
-                    print(f"⚠️ HTTP error occurred: {e.code} - {e.reason}")
-                except urllib.error.URLError as e:
-                    print(f"⚠️ URL error occurred: {e.reason}")
-                except Exception as e:
-                    print(f"⚠️ An unexpected error occurred: {str(e)}")
+            paginated_url = f"{url}?page={page}&per_page={per_page}"
+            data = self._make_request_with_retry(paginated_url, max_retries, timeout)
 
-                retries += 1
-                if retries < max_retries:
-                    print()
-                    print(f"✅ Retrying... ({retries}/{max_retries})")
-                    print()
-                    time.sleep(2)
+            if not data or not data:
+                break
 
-            if retries == max_retries:
-                print("⚠️ Max retries reached. Failed to fetch data.")
-                return data_dict
+            for item in data:
+                self.repositories[item['full_name']] = {
+                    'ssh_url': item['ssh_url'],
+                    'pushed_at': item['pushed_at']
+                }
+            page += 1
 
-    def is_token_valid(self, max_retries=5) -> bool:
+    def fetch_gists(self, max_retries: int = 3, timeout: int = 30):
+        url = "https://api.github.com/gists"
+        page = 1
+        per_page = 100
+        self.gists = {}
+
+        while True:
+            paginated_url = f"{url}?page={page}&per_page={per_page}"
+            data = self._make_request_with_retry(paginated_url, max_retries, timeout)
+
+            if not data or not data:
+                break
+
+            for item in data:
+                self.gists[item['id']] = item['git_pull_url']
+            page += 1
+
+    def is_token_valid(self, max_retries: int = 3, timeout: int = 30) -> bool:
         url = "https://api.github.com/user"
-        retries = 0
-
-        while retries < max_retries:
-            req = urllib.request.Request(url, headers=self.headers)
-            try:
-                with urllib.request.urlopen(req) as response:
-                    return response.status == 200
-            except urllib.error.HTTPError as e:
-                if e.code == 401:
-                    return False
-                print(f"⚠️ HTTP error occurred: {e.code} - {e.reason}")
-            except urllib.error.URLError as e:
-                print(f"⚠️ URL error occurred: {e.reason}")
-            except Exception as e:
-                print(f"⚠️ An unexpected error occurred: {str(e)}")
-
-            retries += 1
-            if retries < max_retries:
-                print()
-                print(f"✅ Retrying... ({retries}/{max_retries})")
-                print()
-                time.sleep(2)
-
-        print("⚠️ Max retries reached. Failed to validate token.")
-        return False
+        data = self._make_request_with_retry(url, max_retries, timeout)
+        return data is not None
