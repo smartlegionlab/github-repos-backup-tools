@@ -4,6 +4,9 @@ from tools.steps.arguments_step import ArgumentsStep
 from tools.printers import SmartPrinter
 from tools.config import Config
 from tools.steps.directory_setup_step import DirectorySetupStep
+from tools.steps.fetch_gists_step import FetchGistsStep
+from tools.steps.fetch_repositories_step import FetchRepositoriesStep
+from tools.steps.git_operations_step import GitOperationsStep
 
 
 class AppManager:
@@ -16,6 +19,9 @@ class AppManager:
             ConfigurationStep(),
             AuthenticationStep(),
             DirectorySetupStep(),
+            FetchRepositoriesStep(),
+            FetchGistsStep(),
+            GitOperationsStep(),
         ]
 
     def run(self):
