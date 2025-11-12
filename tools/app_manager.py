@@ -1,3 +1,4 @@
+from tools.steps.archive_step import ArchiveStep
 from tools.steps.configuration_step import ConfigurationStep
 from tools.steps.arguments_step import ArgumentsStep
 from tools.steps.authentication_step import AuthenticationStep
@@ -5,6 +6,7 @@ from tools.steps.directory_setup_step import DirectorySetupStep
 from tools.steps.fetch_repositories_step import FetchRepositoriesStep
 from tools.steps.fetch_gists_step import FetchGistsStep
 from tools.steps.git_operations_step import GitOperationsStep
+from tools.steps.system_actions_step import SystemActionsStep
 from tools.steps.verification_step import VerificationStep
 from tools.steps.report_step import ReportStep
 from tools.printers import SmartPrinter
@@ -27,6 +29,8 @@ class AppManager:
             GitOperationsStep(),
             VerificationStep(),
             ReportStep(),
+            ArchiveStep(),
+            SystemActionsStep(),
         ]
         self.shutdown_flag = False
 
