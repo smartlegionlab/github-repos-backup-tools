@@ -5,7 +5,8 @@ from tools.steps.authentication_step import AuthenticationStep
 from tools.steps.directory_setup_step import DirectorySetupStep
 from tools.steps.fetch_repositories_step import FetchRepositoriesStep
 from tools.steps.fetch_gists_step import FetchGistsStep
-from tools.steps.git_operations_step import GitOperationsStep
+from tools.steps.gists_step import GistsStep
+from tools.steps.repositories_step import RepositoriesStep
 from tools.steps.system_actions_step import SystemActionsStep
 from tools.steps.verification_step import VerificationStep
 from tools.steps.report_step import ReportStep
@@ -26,9 +27,10 @@ class AppManager:
             DirectorySetupStep(),
             FetchRepositoriesStep(),
             FetchGistsStep(),
-            GitOperationsStep(),
+            RepositoriesStep(),
             VerificationStep(),
             ReportStep(),
+            GistsStep(),
             ArchiveStep(),
             SystemActionsStep(),
         ]

@@ -7,11 +7,11 @@ from tools.steps.base import BaseStep
 from tools.progress_bar import ProgressBar
 
 
-class GitOperationsStep(BaseStep):
+class RepositoriesStep(BaseStep):
     def __init__(self):
         super().__init__(
-            name="Git Operations",
-            description="Cloning and updating repositories/gists"
+            name="Repositories Operations",
+            description="Fetching and cloning/updating repositories"
         )
 
     def execute(self, context: Dict[str, Any]) -> bool:
@@ -20,22 +20,30 @@ class GitOperationsStep(BaseStep):
         args = context.get('args', {})
         github_client = context.get('github_client')
         backup_path = context.get('backup_path')
-        timeout = getattr(args, 'timeout', 30)
-        verbose = getattr(args, 'verbose', False)
+
+        if not getattr(args, 'repos', False):
+            print("⚠️ Repository backup not requested - skipping")
+            return True
 
         if not github_client or not backup_path:
             print("❌ Missing required context data")
             return False
 
-        if getattr(args, 'repos', False) and github_client.repositories:
-            repos_target_dir = os.path.join(backup_path, "repositories")
-            failed_repos = self._clone_items(repos_target_dir, github_client.repositories, "repositories", timeout, verbose)
-            context['failed_repos'] = failed_repos
+        timeout = getattr(args, 'timeout', 30)
+        verbose = getattr(args, 'verbose', False)
 
-        if getattr(args, 'gists', False) and github_client.gists:
-            gists_target_dir = os.path.join(backup_path, "gists")
-            failed_gists = self._clone_items(gists_target_dir, github_client.gists, "gists", timeout, verbose)
-            context['failed_gists'] = failed_gists
+        print("📦 Fetching repositories...")
+        github_client.fetch_repositories(max_retries=3, timeout=timeout)
+        repos_count = len(github_client.repositories)
+        print(f"✅ Found {repos_count} repositories")
+
+        if repos_count == 0:
+            print("⚠️ No repositories to process")
+            return True
+
+        repos_target_dir = os.path.join(backup_path, "repositories")
+        failed_repos = self._clone_items(repos_target_dir, github_client.repositories, "repositories", timeout, verbose)
+        context['failed_repos'] = failed_repos
 
         self.success = True
         return True
@@ -49,17 +57,17 @@ class GitOperationsStep(BaseStep):
         if verbose:
             for name, item_data in items.items():
                 print(f"\n🔍 Processing: {name}")
-                success = self._process_single_item(name, item_data, target_dir, item_type, timeout)
+                success = self._process_single_item(name, item_data, target_dir, timeout)
                 if not success:
-                    failed_dict[name] = self._get_item_url(item_data, item_type)
+                    failed_dict[name] = item_data['ssh_url']
                     failed_count += 1
         else:
             progress_bar = ProgressBar()
             for index, (name, item_data) in enumerate(items.items(), 1):
                 progress_bar.update(index, len(items), failed_count, f"Processing: {name}")
-                success = self._process_single_item(name, item_data, target_dir, item_type, timeout)
+                success = self._process_single_item(name, item_data, target_dir, timeout)
                 if not success:
-                    failed_dict[name] = self._get_item_url(item_data, item_type)
+                    failed_dict[name] = item_data['ssh_url']
                     failed_count += 1
 
             if not failed_dict:
@@ -67,24 +75,21 @@ class GitOperationsStep(BaseStep):
 
         if failed_dict:
             print(f"\n🔄 Retrying {len(failed_dict)} failed {item_type}...")
-            failed_dict = self._retry_failed_items(failed_dict, target_dir, item_type, timeout, verbose)
+            failed_dict = self._retry_failed_items(failed_dict, target_dir, timeout, verbose)
 
         return failed_dict
 
-    def _process_single_item(self, name: str, item_data: Any, target_dir: str, item_type: str, timeout: int) -> bool:
+    def _process_single_item(self, name: str, item_data: dict, target_dir: str, timeout: int) -> bool:
         try:
             item_path = self._create_item_path(target_dir, name)
-            url = self._get_item_url(item_data, item_type)
+            url = item_data['ssh_url']
+            pushed_at = item_data.get('pushed_at')
 
             if os.path.exists(item_path):
-                if item_type == "repositories" and isinstance(item_data, dict):
-                    pushed_at = item_data.get('pushed_at')
-                    if pushed_at and self._needs_update(item_path, pushed_at):
-                        return self._git_pull(item_path, timeout)
-                    else:
-                        return True
-                else:
+                if pushed_at and self._needs_update(item_path, pushed_at):
                     return self._git_pull(item_path, timeout)
+                else:
+                    return True  # Уже актуально
             else:
                 return self._git_clone(url, item_path, timeout)
 
@@ -92,15 +97,20 @@ class GitOperationsStep(BaseStep):
             print(f"❌ Error processing {name}: {e}")
             return False
 
-    def _retry_failed_items(self, failed_items: dict, target_dir: str, item_type: str, timeout: int, verbose: bool) -> dict:
+    def _retry_failed_items(self, failed_items: dict, target_dir: str, timeout: int, verbose: bool) -> dict:
         remaining_failed = failed_items.copy()
+        total_retries = len(failed_items)
 
         while remaining_failed:
             current_failed = remaining_failed.copy()
             remaining_failed.clear()
 
             if verbose:
-                print(f"\n🔄 Retry round: {len(current_failed)} {item_type} remaining")
+                print(f"\n🔄 Retry round: {len(current_failed)} repositories remaining")
+            else:
+                print(f"\n🔄 Retrying {len(current_failed)} failed repositories...")
+
+            retry_failed_count = 0
 
             for name, url in current_failed.items():
                 if verbose:
@@ -118,17 +128,16 @@ class GitOperationsStep(BaseStep):
 
                 if not success:
                     remaining_failed[name] = url
+                    retry_failed_count += 1
+
+                if not verbose:
+                    current_success = total_retries - len(remaining_failed)
+                    print(f"   Progress: {current_success}/{total_retries}")
 
             if not remaining_failed:
-                print(f"✅ All {item_type} processed successfully after retry")
+                print(f"✅ All repositories processed successfully after retry")
 
         return remaining_failed
-
-    def _get_item_url(self, item_data: Any, item_type: str) -> str:
-        if item_type == "repositories":
-            return item_data['ssh_url'] if isinstance(item_data, dict) else item_data
-        else:  # gists
-            return item_data
 
     def _create_item_path(self, target_dir: str, item_name: str) -> str:
         item_path = os.path.normpath(os.path.join(target_dir, os.path.basename(item_name)))
@@ -141,7 +150,8 @@ class GitOperationsStep(BaseStep):
             local_date = self._get_local_commit_date(repo_path)
             github_date = datetime.fromisoformat(github_pushed_at.replace('Z', '+00:00'))
 
-            local_date_utc = local_date.astimezone(timezone.utc).replace(tzinfo=None) if local_date.tzinfo else local_date
+            local_date_utc = local_date.astimezone(timezone.utc).replace(
+                tzinfo=None) if local_date.tzinfo else local_date
             github_date_utc = github_date.replace(tzinfo=None)
 
             time_diff = github_date_utc - local_date_utc
