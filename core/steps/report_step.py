@@ -7,13 +7,13 @@
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
 from typing import Dict, Any
-from tools.steps.base import BaseStep
+from core.steps.base import BaseStep
 
 
 class ReportStep(BaseStep):
     def __init__(self):
         super().__init__(
-            name="Report",
+            name="📊 Report",
             description="Generating backup report"
         )
 

@@ -8,13 +8,13 @@
 # --------------------------------------------------------
 import os
 from typing import Dict, Any
-from tools.steps.base import BaseStep
+from core.steps.base import BaseStep
 
 
 class DirectorySetupStep(BaseStep):
     def __init__(self):
         super().__init__(
-            name="Directory Setup",
+            name="📁 Directory Setup",
             description="Creating backup directory structure"
         )
 

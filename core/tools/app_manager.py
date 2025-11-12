@@ -6,21 +6,22 @@
 # --------------------------------------------------------
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
-from tools.steps.archive_step import ArchiveStep
-from tools.steps.configuration_step import ConfigurationStep
-from tools.steps.arguments_step import ArgumentsStep
-from tools.steps.authentication_step import AuthenticationStep
-from tools.steps.directory_setup_step import DirectorySetupStep
-from tools.steps.fetch_repositories_step import FetchRepositoriesStep
-from tools.steps.fetch_gists_step import FetchGistsStep
-from tools.steps.gists_step import GistsStep
-from tools.steps.repositories_step import RepositoriesStep
-from tools.steps.system_actions_step import SystemActionsStep
-from tools.steps.verification_step import VerificationStep
-from tools.steps.report_step import ReportStep
-from tools.printers import SmartPrinter
-from tools.config import Config
+import os
 import signal
+import sys
+
+from core.steps.archive_step import ArchiveStep
+from core.steps.configuration_step import ConfigurationStep
+from core.steps.arguments_step import ArgumentsStep
+from core.steps.authentication_step import AuthenticationStep
+from core.steps.directory_setup_step import DirectorySetupStep
+from core.steps.gists_step import GistsStep
+from core.steps.repositories_step import RepositoriesStep
+from core.steps.system_actions_step import SystemActionsStep
+from core.steps.verification_step import VerificationStep
+from core.steps.report_step import ReportStep
+from core.tools.printers import SmartPrinter
+from core.tools.config import Config
 
 
 class AppManager:
@@ -33,16 +34,13 @@ class AppManager:
             ConfigurationStep(),
             AuthenticationStep(),
             DirectorySetupStep(),
-            FetchRepositoriesStep(),
-            FetchGistsStep(),
             RepositoriesStep(),
+            GistsStep(),
             VerificationStep(),
             ReportStep(),
-            GistsStep(),
             ArchiveStep(),
             SystemActionsStep(),
         ]
-        self.shutdown_flag = False
 
     def run(self):
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -51,10 +49,6 @@ class AppManager:
             self._show_header()
 
             for step_number, step in enumerate(self.steps, 1):
-                if self.shutdown_flag:
-                    print("\n🛑 Shutdown requested - stopping gracefully")
-                    break
-
                 self._show_step_header(step_number, step)
 
                 success = step.execute(self.context)
@@ -67,15 +61,17 @@ class AppManager:
             self._show_footer()
 
         except KeyboardInterrupt:
-            print("\n🛑 Interrupted by user")
+            print("\n🛑 Interrupted by user - exiting immediately")
+            sys.exit(1)
         except Exception as e:
             print(f"\n⚠️ Critical error: {e}")
+            sys.exit(1)
         finally:
             print("\n👋 Backup process finished")
 
     def _signal_handler(self, signum, frame):
-        print(f"\n🛑 Received interrupt signal (Ctrl+C) - shutting down gracefully...")
-        self.shutdown_flag = True
+        print(f"\n🛑 Received Ctrl+C - exiting immediately")
+        os._exit(1)
 
     def _show_step_header(self, step_number: int, step):
         print(f"\n{'=' * 50}")

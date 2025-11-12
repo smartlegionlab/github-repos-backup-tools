@@ -10,14 +10,14 @@ import os
 import shutil
 import subprocess
 from typing import Dict, Any
-from tools.steps.base import BaseStep
-from tools.progress_bar import ProgressBar
+from core.steps.base import BaseStep
+from core.tools.progress_bar import ProgressBar
 
 
 class GistsStep(BaseStep):
     def __init__(self):
         super().__init__(
-            name="Gists Operations",
+            name="🔄 Gists Operations",
             description="Fetching and cloning/updating gists"
         )
 

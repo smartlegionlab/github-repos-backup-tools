@@ -6,16 +6,16 @@
 # --------------------------------------------------------
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
-import platform
 import os
+import platform
 from typing import Dict, Any
-from tools.steps.base import BaseStep
+from core.steps.base import BaseStep
 
 
 class SystemActionsStep(BaseStep):
     def __init__(self):
         super().__init__(
-            name="System Actions",
+            name="⚡ System Actions",
             description="Executing system actions (shutdown/reboot)"
         )
 

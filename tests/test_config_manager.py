@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.config_manager import ConfigManager
+from core.tools.config_manager import ConfigManager
 
 
 class TestConfigManager:

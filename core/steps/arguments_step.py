@@ -8,13 +8,13 @@
 # --------------------------------------------------------
 import argparse
 from typing import Dict, Any
-from tools.steps.base import BaseStep
+from core.steps.base import BaseStep
 
 
 class ArgumentsStep(BaseStep):
     def __init__(self):
         super().__init__(
-            name="Arguments Parsing",
+            name="🔧 Arguments Parsing",
             description="Parsing command line arguments"
         )
 

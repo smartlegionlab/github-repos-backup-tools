@@ -7,14 +7,14 @@
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
 from typing import Dict, Any
-from tools.steps.base import BaseStep
-from tools.github_tools import GitHubDataMaster
+from core.steps.base import BaseStep
+from core.tools.github_tools import GitHubDataMaster
 
 
 class AuthenticationStep(BaseStep):
     def __init__(self):
         super().__init__(
-            name="GitHub Authentication",
+            name="🔑 GitHub Authentication",
             description="Authenticating with GitHub"
         )
 

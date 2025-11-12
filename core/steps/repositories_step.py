@@ -11,14 +11,14 @@ import shutil
 import subprocess
 from datetime import datetime, timezone
 from typing import Dict, Any
-from tools.steps.base import BaseStep
-from tools.progress_bar import ProgressBar
+from core.steps.base import BaseStep
+from core.tools.progress_bar import ProgressBar
 
 
 class RepositoriesStep(BaseStep):
     def __init__(self):
         super().__init__(
-            name="Repositories Operations",
+            name="🔄 Repositories Operations",
             description="Fetching and cloning/updating repositories"
         )
 
@@ -97,7 +97,7 @@ class RepositoriesStep(BaseStep):
                 if pushed_at and self._needs_update(item_path, pushed_at):
                     return self._git_pull(item_path, timeout)
                 else:
-                    return True  # Уже актуально
+                    return True
             else:
                 return self._git_clone(url, item_path, timeout)
 

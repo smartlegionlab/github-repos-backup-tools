@@ -3,7 +3,7 @@ import os
 import zipfile
 import tarfile
 
-from tools.archive_creator import ZipArchiveCreator, TarArchiveCreator, ArchiveCreator
+from core.tools.archive_creator import ZipArchiveCreator, TarArchiveCreator, ArchiveCreator
 
 
 class TestZipArchiveCreator:

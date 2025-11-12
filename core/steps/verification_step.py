@@ -9,13 +9,13 @@
 import os
 import subprocess
 from typing import Dict, Any
-from tools.steps.base import BaseStep
+from core.steps.base import BaseStep
 
 
 class VerificationStep(BaseStep):
     def __init__(self):
         super().__init__(
-            name="Verification",
+            name="✅ Verification",
             description="Verifying that all repositories and gists are properly cloned/updated"
         )
 

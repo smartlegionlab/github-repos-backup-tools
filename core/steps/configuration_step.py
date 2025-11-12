@@ -7,14 +7,14 @@
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
 from typing import Dict, Any
-from tools.steps.base import BaseStep
-from tools.config_manager import ConfigManager
+from core.steps.base import BaseStep
+from core.tools.config_manager import ConfigManager
 
 
 class ConfigurationStep(BaseStep):
     def __init__(self):
         super().__init__(
-            name="Configuration Setup",
+            name="⚙️ Configuration Setup",
             description="Checking and setting up configuration directories and tokens"
         )
         self.config_manager = ConfigManager()
