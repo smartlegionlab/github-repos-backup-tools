@@ -33,7 +33,7 @@ class ArchiveStep(BaseStep):
 
         print("🗄 Creating backup archive...")
         try:
-            archive_path = self._create_archive_with_proper_name(backup_path, github_login)
+            archive_path = self._create_archive_in_home(backup_path, github_login)
             print(f"✅ Archive created successfully: {archive_path}")
             self.success = True
             return True
@@ -41,7 +41,7 @@ class ArchiveStep(BaseStep):
             print(f"❌ Failed to create archive: {e}")
             return False
 
-    def _create_archive_with_proper_name(self, backup_path: str, github_login: str = None) -> str:
+    def _create_archive_in_home(self, backup_path: str, github_login: str = None) -> str:
         if github_login:
             base_name = f"github_{github_login}"
         else:
@@ -49,6 +49,8 @@ class ArchiveStep(BaseStep):
 
         current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
         archive_name = f"{base_name}_{current_time}"
+
+        home_directory = os.path.expanduser('~')
 
         import tempfile
         import shutil
@@ -59,21 +61,12 @@ class ArchiveStep(BaseStep):
         try:
             shutil.copytree(backup_path, renamed_backup_path)
 
+            final_archive_path = os.path.join(home_directory, f"{archive_name}.zip")
             archive_path = ArchiveCreator.create_archive(renamed_backup_path, "zip")
 
-            final_archive_path = self._rename_archive_to_final_name(archive_path, archive_name)
+            shutil.move(archive_path, final_archive_path)
 
             return final_archive_path
 
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
-
-    def _rename_archive_to_final_name(self, archive_path: str, archive_name: str) -> str:
-        archive_dir = os.path.dirname(archive_path)
-        archive_extension = os.path.splitext(archive_path)[1]
-
-        final_name = f"{archive_name}{archive_extension}"
-        final_path = os.path.join(archive_dir, final_name)
-
-        os.rename(archive_path, final_path)
-        return final_path

@@ -100,15 +100,20 @@ class GistsStep(BaseStep):
             remaining_failed.clear()
 
             if verbose:
-                print(f"\n🔄 Retry round: {len(current_failed)} gists remaining")
+                print(f"\n🔄 Retry round: {len(current_failed)} repositories remaining")
+                progress_bar = None
             else:
-                print(f"\n🔄 Retrying {len(current_failed)} failed gists...")
+                print(f"\n🔄 Retrying {len(current_failed)} failed repositories...")
+                progress_bar = ProgressBar()
 
             retry_failed_count = 0
 
-            for name, url in current_failed.items():
+            for i, (name, url) in enumerate(current_failed.items(), 1):
                 if verbose:
                     print(f"🔍 Retrying: {name}")
+                else:
+                    current_success = total_retries - len(current_failed) + i - retry_failed_count
+                    progress_bar.update(current_success, total_retries, retry_failed_count, f"Retrying: {name}")
 
                 item_path = self._create_item_path(target_dir, name)
 
@@ -124,12 +129,11 @@ class GistsStep(BaseStep):
                     remaining_failed[name] = url
                     retry_failed_count += 1
 
-                if not verbose:
-                    current_success = total_retries - len(remaining_failed)
-                    print(f"   Progress: {current_success}/{total_retries}")
+            if progress_bar and not remaining_failed:
+                progress_bar.finish(f"All repositories processed successfully after retry!")
 
             if not remaining_failed:
-                print(f"✅ All gists processed successfully after retry")
+                print(f"✅ All repositories processed successfully after retry")
 
         return remaining_failed
 
