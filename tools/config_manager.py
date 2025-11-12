@@ -156,23 +156,3 @@ class ConfigManager:
     def _get_current_timestamp() -> str:
         from datetime import datetime
         return datetime.now().isoformat()
-
-
-def setup_configuration() -> Optional[str]:
-    config_manager = ConfigManager()
-
-    print("🔧 Configuration settings...")
-    print(f"📁 Configuration directory: {config_manager.get_config_path()}")
-
-    if not config_manager.ensure_config_dir_exists():
-        print("❌ Failed to create configuration directory")
-        return None
-
-    token = config_manager.get_or_request_token()
-
-    if token:
-        print("✅ Configuration successfully configured")
-    else:
-        print("❌ Failed to set up configuration")
-
-    return token
