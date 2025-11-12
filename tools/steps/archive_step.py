@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict, Any
 from tools.steps.base import BaseStep
 from tools.archive_creator import ArchiveCreator
+import shutil
 
 
 class ArchiveStep(BaseStep):
@@ -47,13 +48,13 @@ class ArchiveStep(BaseStep):
         else:
             base_name = "github_backup"
 
-        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+        current_time = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
         archive_name = f"{base_name}_{current_time}"
 
         home_directory = os.path.expanduser('~')
+        final_archive_path = os.path.join(home_directory, f"{archive_name}.zip")
 
         import tempfile
-        import shutil
 
         temp_dir = tempfile.mkdtemp()
         renamed_backup_path = os.path.join(temp_dir, archive_name)
@@ -61,11 +62,9 @@ class ArchiveStep(BaseStep):
         try:
             shutil.copytree(backup_path, renamed_backup_path)
 
-            final_archive_path = os.path.join(home_directory, f"{archive_name}.zip")
             archive_path = ArchiveCreator.create_archive(renamed_backup_path, "zip")
 
             shutil.move(archive_path, final_archive_path)
-
             return final_archive_path
 
         finally:

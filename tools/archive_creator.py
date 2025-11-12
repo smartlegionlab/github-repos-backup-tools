@@ -55,7 +55,6 @@ class ZipArchiveCreator(BaseArchiveCreator):
     def _create_archive(cls, folder_path: str, output_path: str):
         with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             cls._add_files_to_archive(folder_path, zipf.write)
-        print(f"\nZIP archive created at: {output_path}\n")
 
 
 class TarArchiveCreator(BaseArchiveCreator):
@@ -89,7 +88,6 @@ class TarArchiveCreator(BaseArchiveCreator):
         mode = cls.COMPRESSION_MODES.get(compression, 'w')
         with tarfile.open(output_path, mode) as tarf:
             cls._add_files_to_archive(folder_path, tarf.add)
-        print(f"\nTar archive created at: {output_path}\n")
 
 
 class ArchiveCreator:
