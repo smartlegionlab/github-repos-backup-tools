@@ -3,6 +3,7 @@ from tools.steps.configuration_step import ConfigurationStep
 from tools.steps.arguments_step import ArgumentsStep
 from tools.printers import SmartPrinter
 from tools.config import Config
+from tools.steps.directory_setup_step import DirectorySetupStep
 
 
 class AppManager:
@@ -14,6 +15,7 @@ class AppManager:
             ArgumentsStep(),
             ConfigurationStep(),
             AuthenticationStep(),
+            DirectorySetupStep(),
         ]
 
     def run(self):
