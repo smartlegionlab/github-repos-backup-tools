@@ -7,7 +7,7 @@ class AuthenticationStep(BaseStep):
     def __init__(self):
         super().__init__(
             name="GitHub Authentication",
-            description="Authenticating with GitHub and fetching user data"
+            description="Authenticating with GitHub"
         )
 
     def execute(self, context: Dict[str, Any]) -> bool:
@@ -18,14 +18,12 @@ class AuthenticationStep(BaseStep):
             print("❌ No GitHub token found in context")
             return False
 
-        args = context.get('args', {})
-        fetch_repos = getattr(args, 'repos', False)
-        fetch_gists = getattr(args, 'gists', False)
-        timeout = getattr(args, 'timeout', 30)
+        timeout = getattr(context.get('args', {}), 'timeout', 30)
 
         github_client = GitHubDataMaster(github_token)
 
-        print("🔑 Validating token and fetching user data...")
+        print("🔑 Validating GitHub token...")
+
         success = github_client.fetch_user_data(max_retries=3, timeout=timeout)
 
         if not success or not github_client.login:
@@ -33,18 +31,6 @@ class AuthenticationStep(BaseStep):
             return False
 
         print(f"✅ Authenticated as: {github_client.login}")
-
-        if fetch_repos:
-            print("📦 Fetching repositories...")
-            github_client.fetch_repositories(max_retries=3, timeout=timeout)
-            repos_count = len(github_client.repositories)
-            print(f"✅ Found {repos_count} repositories")
-
-        if fetch_gists:
-            print("📝 Fetching gists...")
-            github_client.fetch_gists(max_retries=3, timeout=timeout)
-            gists_count = len(github_client.gists)
-            print(f"✅ Found {gists_count} gists")
 
         context['github_client'] = github_client
         context['github_login'] = github_client.login
