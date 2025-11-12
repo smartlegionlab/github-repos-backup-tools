@@ -1,3 +1,4 @@
+from tools.steps.authentication_step import AuthenticationStep
 from tools.steps.configuration_step import ConfigurationStep
 from tools.steps.arguments_step import ArgumentsStep
 from tools.printers import SmartPrinter
@@ -12,6 +13,7 @@ class AppManager:
         self.steps = [
             ArgumentsStep(),
             ConfigurationStep(),
+            AuthenticationStep(),
         ]
 
     def run(self):
