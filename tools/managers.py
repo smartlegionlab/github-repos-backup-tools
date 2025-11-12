@@ -15,13 +15,13 @@ from typing import Dict
 import platform
 from datetime import datetime, timezone
 
-from utils.backup_reporter import BackupReporter
-from utils.archive_creator import ArchiveCreator
-from utils.config import Config
-from utils.github_tools import GitHubDataMaster
-from utils.parsers import ConfigParser
-from utils.printers import SmartPrinter
-from utils.progress_bar import ProgressBar
+from tools.backup_reporter import BackupReporter
+from tools.archive_creator import ArchiveCreator
+from tools.config import Config
+from tools.github_tools import GitHubDataMaster
+from tools.parsers import ConfigParser
+from tools.printers import SmartPrinter
+from tools.progress_bar import ProgressBar
 
 
 class AppManager:
