@@ -1,17 +1,18 @@
-# GitHub Repositories Backup Tools <sup>v1.0.0</sup>
+# GitHub Repositories Backup Tools <sup>v1.0.1</sup>
 
 ![GitHub top language](https://img.shields.io/github/languages/top/smartlegionlab/github-repos-backup-tools)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/smartlegionlab/github-repos-backup-tools)](https://github.com/smartlegionlab/github-repos-backup-tools/)
 [![GitHub](https://img.shields.io/github/license/smartlegionlab/github-repos-backup-tools)](https://github.com/smartlegionlab/github-repos-backup-tools/blob/master/LICENSE)
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
-![Platform](https://img.shields.io/badge/platform-windows%20%7C%20linux%20%7C%20macos%20%7C%20termux-lightgrey)
+![Platform](https://img.shields.io/badge/platform-windows%20%7C%20linux%20%7C%20macos%20%7C%20termux-blue)
 ![GitHub last commit](https://img.shields.io/github/last-commit/smartlegionlab/github-repos-backup-tools)
 ![GitHub Issues](https://img.shields.io/github/issues/smartlegionlab/github-repos-backup-tools)
+
 > Professional modular solution for automatic cloning and backup of GitHub repositories and gists with step-by-step execution pipeline
 
 ---
 
-## 🎯 What's New in v1.0.0
+## 🎯 What's New in v1.0.1
 
 ### 🏗️ Completely Rewritten Architecture
 - **Modular Step-by-Step Pipeline** - Each operation is now an independent step
@@ -24,12 +25,11 @@
 2. **Configuration Setup** - Secure token management
 3. **GitHub Authentication** - Token validation and user verification
 4. **Directory Setup** - Organized backup structure
-5. **Data Fetching** - Repository and gist metadata collection
-6. **Operations** - Smart cloning/updating with retry logic
-7. **Verification** - Integrity checks for all backups
-8. **Reporting** - Comprehensive backup summary
-9. **Archiving** - Optional compression with timestamps
-10. **System Actions** - Shutdown/reboot options
+5. **Operations** - Smart cloning/updating with retry logic
+6. **Verification** - Integrity checks for all backups
+7. **Reporting** - Comprehensive backup summary
+8. **Archiving** - Optional compression with timestamps
+9. **System Actions** - Shutdown/reboot options
 
 ## 🚀 Key Features
 
@@ -45,6 +45,8 @@
 - **Detailed Reporting** - Comprehensive success/failure reports
 - **Instant Process Termination** - Single Ctrl+C stops all operations immediately
 - **Git Repository Health Checks** - Prevents broken clones with integrity validation
+- **Git Health Verification** - Automatic detection and repair of broken repositories
+- **Verbose Numbering** - Clear progress tracking with item counters in debug mode
 
 ## 🖥 System Requirements
 
@@ -197,11 +199,11 @@ A: Verify SSH key is added to GitHub and test with `ssh -T git@github.com`
 
 ## 📝 Changelog
 
-### v1.0.0 Major Release
+### v1.0.1 Major Release
 - **Complete architectural rewrite** with modular step system
 - **Enhanced error handling** and recovery mechanisms  
 - **Smart update detection** with 5-minute threshold
-- **Improved security** with path validation and secure token storage
+- **Improved security** with path validation and token storage
 - **Secure token management** - automatic setup on first run with encrypted storage
 - **Better user experience** with structured output and progress tracking
 - **Mutually exclusive power options** (`--shutdown`/`--reboot`)
@@ -216,7 +218,7 @@ A: Verify SSH key is added to GitHub and test with `ssh -T git@github.com`
 
 ---
 
-**⚠️ IMPORTANT NOTE**: If you experience any issues with v1.0.0, please report them in the [Issues section]((https://github.com/smartlegionlab/github-repos-backup-tools/issues)) and temporarily use the latest stable version v0.9.4 while we investigate.
+**⚠️ IMPORTANT NOTE**: If you experience any issues with v1.0.1, please report them in the [Issues section](https://github.com/smartlegionlab/github-repos-backup-tools/issues) and temporarily use the latest stable version v0.9.4 while we investigate.
 
 ---
 

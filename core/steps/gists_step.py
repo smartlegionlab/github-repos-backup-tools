@@ -20,6 +20,7 @@ class GistsStep(BaseStep):
             name="🔄 Gists Operations",
             description="Fetching and cloning/updating gists"
         )
+        self.verbose = False
 
     def execute(self, context: Dict[str, Any]) -> bool:
         print(f"🔧 {self.description}...")
@@ -38,6 +39,7 @@ class GistsStep(BaseStep):
 
         timeout = getattr(args, 'timeout', 30)
         verbose = getattr(args, 'verbose', False)
+        self.verbose = verbose
 
         print("📝 Fetching gists...")
         github_client.fetch_gists(max_retries=3, timeout=timeout)
@@ -62,8 +64,8 @@ class GistsStep(BaseStep):
         failed_count = 0
 
         if verbose:
-            for name, url in items.items():
-                print(f"\n🔍 Processing: {name}")
+            for index, (name, url) in enumerate(items.items(), 1):
+                print(f"\n{index}/{len(items)} 🔍 Processing: {name}")
                 success = self._process_single_item(name, url, target_dir, timeout)
                 if not success:
                     failed_dict[name] = url
@@ -91,12 +93,21 @@ class GistsStep(BaseStep):
             item_path = self._create_item_path(target_dir, name)
 
             if os.path.exists(item_path):
-                return self._git_pull(item_path, timeout)
+                success = self._git_pull(item_path, timeout)
+                if self.verbose:
+                    status = "✅ Updated" if success else "❌ Update failed"
+                    print(f"{status}: {name}")
+                return success
             else:
-                return self._git_clone(url, item_path, timeout)
+                success = self._git_clone(url, item_path, timeout)
+                if self.verbose:
+                    status = "✅ Cloned" if success else "❌ Clone failed"
+                    print(f"{status}: {name}")
+                return success
 
         except Exception as e:
-            print(f"❌ Error processing {name}: {e}")
+            if self.verbose:
+                print(f"❌ Error processing {name}: {e}")
             return False
 
     def _retry_failed_items(self, failed_items: dict, target_dir: str, timeout: int, verbose: bool) -> dict:
