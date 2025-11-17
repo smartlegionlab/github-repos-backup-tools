@@ -15,6 +15,7 @@ from core.auth_manager import GithubAuthManager
 from core.config import Config, ConfigPathManager
 from core.directory_manager import DirectoryManager
 from core.gists_manager import GistsManager
+from core.report_manager import ReportManager
 from core.repos_manager import RepositoriesManager
 from core.smart_printer import SmartPrinter
 from core.token_manager import TokenManager
@@ -32,6 +33,7 @@ class AppManager:
         self.repo_manager = None
         self.gists_manager = None
         self.verify_manager = None
+        self.report_manager = None
 
     def _signal_handler(self, signum, frame):
         _ = signum, frame
@@ -129,7 +131,26 @@ class AppManager:
         if not verify_status:
             print('❌ Error! Verification failed!')
 
+        report_status = self._get_report()
+
+        if not report_status:
+            print('❌ Generating backup report error!')
+
         self._show_footer()
+
+    def _get_report(self):
+        print("\n📊 Report")
+        print("Generating backup report...")
+        self.report_manager = ReportManager(
+            github_client=self.github_client,
+            backup_path=self.dir_manager.backup_path,
+            failed_repos=self.repo_manager.failed_repos if self.repo_manager else {},
+            failed_gists=self.gists_manager.failed_gists if self.gists_manager else {},
+            repo_flag=self.args_manager.args.repos,
+            gists_flag=self.args_manager.args.gists,
+        )
+        return self.report_manager.execute()
+
 
     def _run_verification(self):
         print('\n✅ Verification')
