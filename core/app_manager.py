@@ -18,6 +18,7 @@ from core.gists_manager import GistsManager
 from core.repos_manager import RepositoriesManager
 from core.smart_printer import SmartPrinter
 from core.token_manager import TokenManager
+from core.verify_manager import VerifyManager
 
 
 class AppManager:
@@ -30,6 +31,7 @@ class AppManager:
         self.dir_manager = None
         self.repo_manager = None
         self.gists_manager = None
+        self.verify_manager = None
 
     def _signal_handler(self, signum, frame):
         _ = signum, frame
@@ -121,6 +123,26 @@ class AppManager:
 
             if not gists_manager_status:
                 print(f"❌ Error cloning gists!\n")
+
+        verify_status = self._run_verification()
+
+        if not verify_status:
+            print('❌ Error! Verification failed!')
+
+        self._show_footer()
+
+    def _run_verification(self):
+        print('\n✅ Verification')
+        print('Verifying that all repositories and gists are properly cloned/updated...')
+        self.verify_manager = VerifyManager(
+            github_client=self.github_client,
+            backup_path=self.dir_manager.backup_path,
+            failed_repos=self.repo_manager.failed_repos if self.repo_manager else {},
+            failed_gists=self.gists_manager.failed_gists if self.gists_manager else {},
+            repo_flag=self.args_manager.args.repos,
+            gists_flag=self.args_manager.args.gists,
+        )
+        return self.verify_manager.execute()
 
 
     def _clone_repositories(self, github_client, target_dir):
