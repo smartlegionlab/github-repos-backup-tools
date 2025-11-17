@@ -14,6 +14,7 @@ from core.args_manager import ArgumentsManager
 from core.auth_manager import GithubAuthManager
 from core.config import Config, ConfigPathManager
 from core.directory_manager import DirectoryManager
+from core.gists_manager import GistsManager
 from core.repos_manager import RepositoriesManager
 from core.smart_printer import SmartPrinter
 from core.token_manager import TokenManager
@@ -28,6 +29,7 @@ class AppManager:
         self.args_manager = None
         self.dir_manager = None
         self.repo_manager = None
+        self.gists_manager = None
 
     def _signal_handler(self, signum, frame):
         _ = signum, frame
@@ -111,6 +113,15 @@ class AppManager:
             if not repo_manager_status:
                 print(f"❌ Error cloning repositories!\n")
 
+        if self.args_manager.args.gists:
+            gists_manager_status = self._clone_gists(
+                self.github_client,
+                self.dir_manager.gists_path
+            )
+
+            if not gists_manager_status:
+                print(f"❌ Error cloning gists!\n")
+
 
     def _clone_repositories(self, github_client, target_dir):
         print("\n🔄 Repositories Operations")
@@ -121,6 +132,15 @@ class AppManager:
         )
         return self.repo_manager.execute()
 
+    def _clone_gists(self, github_client, target_dir):
+        print("\n🔄 Gists Operations")
+        print("Fetching and cloning/updating gists...")
+        self.gists_manager = GistsManager(
+            github_client=github_client,
+            gists_target_dir=target_dir
+        )
+        return self.gists_manager.execute()
+
     def _create_backup_dirs(self):
         print("\n📁 Directory Setup: ")
         print("Creating backup directory structure...")
@@ -129,7 +149,6 @@ class AppManager:
         )
         status = self.dir_manager.run()
         return status
-
 
     @staticmethod
     def _token_verify(token, timeout, max_retries):

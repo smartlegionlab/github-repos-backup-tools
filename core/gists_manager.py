@@ -1,34 +1,33 @@
 import os
 import shutil
 import subprocess
-from datetime import datetime, timezone
 
 from core.progress_bar import ProgressBar
 
 
-class RepositoriesManager:
-    def __init__(self, github_client, repos_target_dir, verbose=False, timeout=30, max_retries=3):
+class GistsManager:
+    def __init__(self, github_client, gists_target_dir, verbose=False, timeout=30, max_retries=3):
         self.github_client = github_client
-        self.repos_target_dir = repos_target_dir
+        self.gists_target_dir = gists_target_dir
         self.verbose = verbose
         self.timeout = timeout
         self.max_retries = max_retries
-        self.failed_repos = {}
+        self.failed_gists = {}
 
     def execute(self):
         try:
-            self.github_client.fetch_repositories(max_retries=self.max_retries, timeout=self.timeout)
-            repos_count = len(self.github_client.repositories)
-            print(f"✅ Found {repos_count} repositories")
+            self.github_client.fetch_gists(max_retries=self.max_retries, timeout=self.timeout)
+            gists_count = len(self.github_client.gists)
+            print(f"✅ Found {gists_count} gists")
 
-            if repos_count == 0:
-                print("⚠️ No repositories to process")
+            if gists_count == 0:
+                print("⚠️ No gists to process")
                 return True
 
-            self.failed_repos = self._clone_items(
-                target_dir=self.repos_target_dir,
-                items=self.github_client.repositories,
-                item_type="repositories",
+            self.failed_gists = self._clone_items(
+                target_dir=self.gists_target_dir,
+                items=self.github_client.gists,
+                item_type="gists",
                 timeout=self.timeout,
                 verbose=self.verbose
             )
@@ -38,25 +37,25 @@ class RepositoriesManager:
         return True
 
     def _clone_items(self, target_dir: str, items: dict, item_type: str, timeout: int, verbose: bool) -> dict:
-        print(f"\n📦 Processing {len(items)} {item_type}...")
+        print(f"\n📝 Processing {len(items)} {item_type}...")
 
         failed_dict = {}
         failed_count = 0
 
         if verbose:
-            for index, (name, item_data) in enumerate(items.items(), 1):
+            for index, (name, url) in enumerate(items.items(), 1):
                 print(f"\n{index}/{len(items)} 🔍 Processing: {name}")
-                success = self._process_single_item(name, item_data, target_dir, timeout)
+                success = self._process_single_item(name, url, target_dir, timeout)
                 if not success:
-                    failed_dict[name] = item_data['ssh_url']
+                    failed_dict[name] = url
                     failed_count += 1
         else:
             progress_bar = ProgressBar()
-            for index, (name, item_data) in enumerate(items.items(), 1):
+            for index, (name, url) in enumerate(items.items(), 1):
                 progress_bar.update(index, len(items), failed_count, f"Processing: {name}")
-                success = self._process_single_item(name, item_data, target_dir, timeout)
+                success = self._process_single_item(name, url, target_dir, timeout)
                 if not success:
-                    failed_dict[name] = item_data['ssh_url']
+                    failed_dict[name] = url
                     failed_count += 1
 
             if not failed_dict:
@@ -68,23 +67,16 @@ class RepositoriesManager:
 
         return failed_dict
 
-    def _process_single_item(self, name: str, item_data: dict, target_dir: str, timeout: int) -> bool:
+    def _process_single_item(self, name: str, url: str, target_dir: str, timeout: int) -> bool:
         try:
             item_path = self._create_item_path(target_dir, name)
-            url = item_data['ssh_url']
-            pushed_at = item_data.get('pushed_at')
 
             if os.path.exists(item_path):
-                if pushed_at and self._needs_update(item_path, pushed_at):
-                    success = self._git_pull(item_path, timeout)
-                    if self.verbose:
-                        status = "✅ Updated" if success else "❌ Update failed"
-                        print(f"{status}: {name}")
-                    return success
-                else:
-                    if self.verbose:
-                        print(f"✅ Already up to date: {name}")
-                    return True
+                success = self._git_pull(item_path, timeout)
+                if self.verbose:
+                    status = "✅ Updated" if success else "❌ Update failed"
+                    print(f"{status}: {name}")
+                return success
             else:
                 success = self._git_clone(url, item_path, timeout)
                 if self.verbose:
@@ -149,59 +141,6 @@ class RepositoriesManager:
             raise ValueError(f"Potential path traversal attack! Blocked: {item_path}")
         return item_path
 
-    def _needs_update(self, repo_path: str, github_pushed_at: str) -> bool:
-        try:
-            local_date = self._get_local_commit_date(repo_path)
-            github_date = datetime.fromisoformat(github_pushed_at.replace('Z', '+00:00'))
-
-            local_date_utc = local_date.astimezone(timezone.utc).replace(
-                tzinfo=None) if local_date.tzinfo else local_date
-            github_date_utc = github_date.replace(tzinfo=None)
-
-            time_diff = github_date_utc - local_date_utc
-            return time_diff.total_seconds() > 300
-
-        except Exception as e:
-            print(e)
-            return True
-
-    def _get_local_commit_date(self, repo_path: str) -> datetime:
-        try:
-            git_dir = os.path.join(repo_path, '.git')
-            if not os.path.exists(git_dir):
-                return datetime.min
-
-            check_result = subprocess.run(
-                ['git', '-C', repo_path, 'rev-parse', '--verify', 'HEAD'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                timeout=10
-            )
-
-            if check_result.returncode != 0:
-                return datetime.min
-
-            result = subprocess.run(
-                ['git', '-C', repo_path, 'show', '-s', '--format=%ci', 'HEAD'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                timeout=10
-            )
-
-            if result.returncode == 0 and result.stdout.strip():
-                date_line = result.stdout.strip().split('\n')[0]
-                if date_line:
-                    date_str_clean = date_line.replace(' +', '+').replace(' -', '-')
-                    return datetime.fromisoformat(date_str_clean)
-
-            return datetime.min
-
-        except Exception as e:
-            print(e)
-            return datetime.min
-
     def _git_clone(self, url: str, item_path: str, timeout: int) -> bool:
         try:
             result = subprocess.run(
@@ -218,8 +157,7 @@ class RepositoriesManager:
 
         except subprocess.TimeoutExpired:
             return False
-        except Exception as e:
-            print(e)
+        except Exception:
             return False
 
     def _git_pull(self, item_path: str, timeout: int) -> bool:
@@ -238,8 +176,7 @@ class RepositoriesManager:
 
         except subprocess.TimeoutExpired:
             return False
-        except Exception as e:
-            print(e)
+        except Exception:
             return False
 
     def _verify_git_repo_health(self, repo_path: str) -> bool:
@@ -263,10 +200,10 @@ class RepositoriesManager:
             health_ok = result1.returncode == 0 and result2.returncode == 0
 
             if not health_ok:
-                print(f"⚠️ Repository health check failed: {os.path.basename(repo_path)}")
+                print(f"⚠️ Gist health check failed: {os.path.basename(repo_path)}")
 
             return health_ok
 
         except Exception as e:
-            print(f"⚠️ Repository health check error {os.path.basename(repo_path)}: {e}")
+            print(f"⚠️ Gist health check error {os.path.basename(repo_path)}: {e}")
             return False
