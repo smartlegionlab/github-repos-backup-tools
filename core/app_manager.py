@@ -13,6 +13,7 @@ import sys
 from core.args_parser import ArgumentsParser
 from core.auth_manager import GithubAuthManager
 from core.config import Config, ConfigPathManager
+from core.directory_manager import DirectoryManager
 from core.smart_printer import SmartPrinter
 from core.token_manager import TokenManager
 
@@ -23,6 +24,7 @@ class AppManager:
         self.config = Config()
         self.token_manager = None
         self.github_client = None
+        self.args = None
 
     def _signal_handler(self, signum, frame):
         _ = signum, frame
@@ -38,6 +40,8 @@ class AppManager:
         if not args:
             print('❌ Error! No arguments found...')
             self._exit()
+
+        self.args = args
 
         config_file = self._create_config()
 
@@ -79,6 +83,37 @@ class AppManager:
         print(f"✅ Authenticated as: {github_client.login}")
 
         self.github_client = github_client
+
+        backup_path = self._create_backup_dirs()
+
+        if backup_path is None:
+            print(f"❌ Failed to create backup directory")
+            self._exit()
+
+        print(f"📁 Main backup directory: {backup_path}")
+
+        if self.args.repos:
+            print("   ✅ repositories/")
+
+        if self.args.gists:
+            print("   ✅ gists/")
+
+        if not self.args.repos and not self.args.gists:
+            print("⚠️ No backup operations selected - no subdirectories created")
+
+
+
+
+    def _create_backup_dirs(self):
+        print("\n📁 Directory Setup: ")
+        print("Creating backup directory structure...")
+        backup_path = DirectoryManager.ensure_backup_structure_exists(
+            github_login=self.github_client.login,
+            need_repos=self.args.repos,
+            need_gists=self.args.gists
+        )
+        return backup_path
+
 
     @staticmethod
     def _token_verify(token, timeout, max_retries):
