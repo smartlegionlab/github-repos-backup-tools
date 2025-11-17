@@ -7,36 +7,67 @@
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
 from pathlib import Path
-from typing import Optional
 
 
 class DirectoryManager:
 
-    @classmethod
-    def get_backup_path(cls, github_login: str) -> Path:
-        return Path.home() / f"{github_login}_github_backup"
+    def __init__(self, github_login):
+        self._github_login = github_login
+        self._backup_path = None
+        self._repo_path = None
+        self._gists_path = None
 
-    @classmethod
-    def ensure_backup_structure_exists(
-            cls,
-            github_login: str,
-            need_repos: bool = False,
-            need_gists: bool = False
-    ) -> Optional[Path]:
+    def run(self):
+        self._backup_path = self._get_or_create_backup_path()
+        self._repo_path = self._get_or_create_repo_path()
+        self._gists_path = self._get_or_create_gists_path()
+        return all(
+            [
+                self._backup_path,
+                self._repo_path,
+                self._gists_path
+            ]
+        )
+
+    @property
+    def github_login(self):
+        return self._github_login
+
+    @property
+    def backup_path(self):
+        return self._backup_path
+
+    @property
+    def repo_path(self):
+        return self._repo_path
+
+    @property
+    def gists_path(self):
+        return self._gists_path
+
+    def _get_or_create_backup_path(self):
         try:
-            backup_path = cls.get_backup_path(github_login)
+            backup_path = Path.home() / f"{self._github_login}_github_backup"
             backup_path.mkdir(parents=True, exist_ok=True)
-
-            if need_repos:
-                repos_path = backup_path / "repositories"
-                repos_path.mkdir(exist_ok=True)
-
-            if need_gists:
-                gists_path = backup_path / "gists"
-                gists_path.mkdir(exist_ok=True)
-
             return backup_path
+        except Exception as e:
+            print(e)
+            return None
 
+    def _get_or_create_repo_path(self):
+        try:
+            repos_path = self._backup_path / "repositories"
+            repos_path.mkdir(exist_ok=True)
+            return repos_path
+        except Exception as e:
+            print(e)
+            return None
+
+    def _get_or_create_gists_path(self):
+        try:
+            gists_path = self._backup_path / "gists"
+            gists_path.mkdir(exist_ok=True)
+            return gists_path
         except Exception as e:
             print(e)
             return None

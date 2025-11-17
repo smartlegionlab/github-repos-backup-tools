@@ -14,6 +14,7 @@ from core.args_parser import ArgumentsParser
 from core.auth_manager import GithubAuthManager
 from core.config import Config, ConfigPathManager
 from core.directory_manager import DirectoryManager
+from core.repo_manager import RepositoriesManager
 from core.smart_printer import SmartPrinter
 from core.token_manager import TokenManager
 
@@ -25,6 +26,8 @@ class AppManager:
         self.token_manager = None
         self.github_client = None
         self.args = None
+        self.dir_manager = None
+        self.repo_manager = None
 
     def _signal_handler(self, signum, frame):
         _ = signum, frame
@@ -84,13 +87,13 @@ class AppManager:
 
         self.github_client = github_client
 
-        backup_path = self._create_backup_dirs()
+        create_dirs_status = self._create_backup_dirs()
 
-        if backup_path is None:
+        if not create_dirs_status:
             print(f"❌ Failed to create backup directory")
             self._exit()
 
-        print(f"📁 Main backup directory: {backup_path}")
+        print(f"📁 Main backup directory: {self.dir_manager.backup_path}")
 
         if self.args.repos:
             print("   ✅ repositories/")
@@ -101,18 +104,33 @@ class AppManager:
         if not self.args.repos and not self.args.gists:
             print("⚠️ No backup operations selected - no subdirectories created")
 
+        if self.args.repos:
+            repo_manager_status = self._clone_repositories(
+                self.github_client,
+                self.dir_manager.repo_path
+            )
+
+            if not repo_manager_status:
+                print(f"❌ Error cloning repositories!\n")
 
 
+    def _clone_repositories(self, github_client, target_dir):
+        print("\n🔄 Repositories Operations")
+        print("Fetching and cloning/updating repositories...")
+        self.repo_manager = RepositoriesManager(
+            github_client=github_client,
+            repos_target_dir=target_dir
+        )
+        return self.repo_manager.execute()
 
     def _create_backup_dirs(self):
         print("\n📁 Directory Setup: ")
         print("Creating backup directory structure...")
-        backup_path = DirectoryManager.ensure_backup_structure_exists(
-            github_login=self.github_client.login,
-            need_repos=self.args.repos,
-            need_gists=self.args.gists
+        self.dir_manager = DirectoryManager(
+            github_login=self.github_client.login
         )
-        return backup_path
+        status = self.dir_manager.run()
+        return status
 
 
     @staticmethod
