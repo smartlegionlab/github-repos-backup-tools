@@ -10,11 +10,11 @@ import os
 import signal
 import sys
 
-from core.args_parser import ArgumentsParser
+from core.args_manager import ArgumentsManager
 from core.auth_manager import GithubAuthManager
 from core.config import Config, ConfigPathManager
 from core.directory_manager import DirectoryManager
-from core.repo_manager import RepositoriesManager
+from core.repos_manager import RepositoriesManager
 from core.smart_printer import SmartPrinter
 from core.token_manager import TokenManager
 
@@ -25,7 +25,7 @@ class AppManager:
         self.config = Config()
         self.token_manager = None
         self.github_client = None
-        self.args = None
+        self.args_manager = None
         self.dir_manager = None
         self.repo_manager = None
 
@@ -38,13 +38,11 @@ class AppManager:
     def run(self):
         signal.signal(signal.SIGINT, self._signal_handler)
         self._show_header()
-        args = self._parse_args()
+        args_manager_status = self._parse_args()
 
-        if not args:
+        if not args_manager_status:
             print('❌ Error! No arguments found...')
             self._exit()
-
-        self.args = args
 
         config_file = self._create_config()
 
@@ -64,10 +62,10 @@ class AppManager:
 
         print('\n✅ Token obtained successfully')
 
-        if args.token:
+        if self.args_manager.args.token:
             self._update_token()
 
-        timeout = args.timeout or 30
+        timeout = self.args_manager.args.timeout or 30
 
         token_verify_success, github_client = self._token_verify(token, timeout, 3)
 
@@ -95,16 +93,16 @@ class AppManager:
 
         print(f"📁 Main backup directory: {self.dir_manager.backup_path}")
 
-        if self.args.repos:
+        if self.args_manager.args.repos:
             print("   ✅ repositories/")
 
-        if self.args.gists:
+        if self.args_manager.args.gists:
             print("   ✅ gists/")
 
-        if not self.args.repos and not self.args.gists:
+        if not self.args_manager.args.repos and not self.args_manager.args.gists:
             print("⚠️ No backup operations selected - no subdirectories created")
 
-        if self.args.repos:
+        if self.args_manager.args.repos:
             repo_manager_status = self._clone_repositories(
                 self.github_client,
                 self.dir_manager.repo_path
@@ -165,15 +163,15 @@ class AppManager:
         self._show_footer()
         sys.exit(0)
 
-    @staticmethod
-    def _parse_args():
+    def _parse_args(self):
         print('\n🔧 Arguments Parsing: ')
         print('Parsing command line arguments...')
-        parser = ArgumentsParser()
-        args = parser.args
+        self.args_manager = ArgumentsManager()
+        args = self.args_manager.args
+
         if not any([args.repos, args.gists, args.token]):
-            parser.parser.print_usage()
-            print("\n❌ Error: Specify at least one backup operation (-r or -g)")
+            self.args_manager.parser.print_usage()
+            print("\n❌ Error: Specify at least one backup operation (-r or -g or -t)")
             return False
 
         print("\n📋 Parsed arguments:")
@@ -193,7 +191,7 @@ class AppManager:
             print("   Reboot: ✅ After completion")
         else:
             print("   Power: ❌ No action")
-        return args
+        return True
 
     def _show_header(self):
         self.printer.show_head(text=self.config.app_name)

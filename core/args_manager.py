@@ -9,7 +9,7 @@
 import argparse
 
 
-class ArgumentsParser:
+class ArgumentsManager:
     def __init__(self):
         self._parser = self._create_parser()
 
