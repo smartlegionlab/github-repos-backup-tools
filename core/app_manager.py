@@ -79,7 +79,9 @@ class AppManager:
 
         token_verify_success, github_client = self._token_verify(token, timeout, 3)
 
-        if not all([token_verify_success, github_client.login]):
+        github_login = github_client.login if github_client else False
+
+        if not all([token_verify_success, github_login]):
             print("❌ Failed to authenticate with GitHub")
             choice = input('\nWant to update your token? WARNING! Old token will be completely deleted! [y/n]: ')
             if choice == 'y':
