@@ -10,7 +10,8 @@ import os
 import signal
 import sys
 
-from core.arguments_parser import ArgumentsParser
+from core.args_parser import ArgumentsParser
+from core.auth_manager import GithubAuthManager
 from core.config import Config, ConfigPathManager
 from core.smart_printer import SmartPrinter
 from core.token_manager import TokenManager
@@ -21,6 +22,7 @@ class AppManager:
         self.printer = SmartPrinter()
         self.config = Config()
         self.token_manager = None
+        self.github_client = None
 
     def _signal_handler(self, signum, frame):
         _ = signum, frame
@@ -58,10 +60,37 @@ class AppManager:
         if args.token:
             self._update_token()
 
+        timeout = args.timeout or 30
+
+        token_verify_success, github_client = self._token_verify(token, timeout, 3)
+
+        if not all([token_verify_success, github_client.login]):
+            print("❌ Failed to authenticate with GitHub")
+            choice = input('\nWant to update your token? WARNING! Old token will be completely deleted! [y/n]: ')
+            if choice == 'y':
+                self.token_manager.delete_config()
+                self.token_manager.get_token()
+                print('\n✅ Token obtained successfully')
+                print('🛑 Rebooting app...')
+            else:
+                print('\n🛑 Shutting down...')
+            self._exit()
+
+        print(f"✅ Authenticated as: {github_client.login}")
+
+        self.github_client = github_client
+
+    @staticmethod
+    def _token_verify(token, timeout, max_retries):
+        print("\n🔑 GitHub Authentication: ")
+        print("Authenticating with GitHub...")
+        success, github_client = GithubAuthManager.token_verify(token, timeout, max_retries)
+        return success, github_client
+
     def _update_token(self):
         print('\n🔑 Update GitHub token: ')
         print('WARNING! Old token will be completely deleted!\n')
-        choice = input('Update token [y|n]: ')
+        choice = input('Update token [y/n]: ')
         if choice == 'y':
             self.token_manager.delete_config()
             self.token_manager.get_token()
