@@ -13,12 +13,12 @@ import sys
 from core.archive_manager import ArchiveManager
 from core.args_manager import ArgumentsManager
 from core.auth_manager import GithubAuthManager
-from core.config import Config, ConfigPathManager
+from core.config_manager import Config, ConfigPathManager
 from core.directory_manager import DirectoryManager
 from core.gists_manager import GistsManager
 from core.report_manager import ReportManager
 from core.repos_manager import RepositoriesManager
-from core.smart_printer import SmartPrinter
+from core.utils.smart_printer import SmartPrinter
 from core.system_action_manager import SystemActionManager
 from core.token_manager import TokenManager
 from core.verify_manager import VerifyManager
