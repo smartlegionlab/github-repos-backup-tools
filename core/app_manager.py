@@ -10,6 +10,7 @@ import os
 import signal
 import sys
 
+from core.archive_manager import ArchiveManager
 from core.args_manager import ArgumentsManager
 from core.auth_manager import GithubAuthManager
 from core.config import Config, ConfigPathManager
@@ -34,6 +35,7 @@ class AppManager:
         self.gists_manager = None
         self.verify_manager = None
         self.report_manager = None
+        self.archive_manager = None
 
     def _signal_handler(self, signum, frame):
         _ = signum, frame
@@ -136,10 +138,23 @@ class AppManager:
         if not report_status:
             print('❌ Generating backup report error!')
 
+        if self.args_manager.args.archive:
+            archive_status = self._create_archive()
+            if not archive_status:
+                print("❌ Archive creation error!")
+
         self._show_footer()
 
+    def _create_archive(self):
+        print("\n🗄️ Archive Creation: ")
+        self.archive_manager = ArchiveManager(
+            backup_path=self.dir_manager.backup_path,
+            github_login=self.github_client.login
+        )
+        return self.archive_manager.execute()
+
     def _get_report(self):
-        print("\n📊 Report")
+        print("\n📊 Report: ")
         print("Generating backup report...")
         self.report_manager = ReportManager(
             github_client=self.github_client,
@@ -153,7 +168,7 @@ class AppManager:
 
 
     def _run_verification(self):
-        print('\n✅ Verification')
+        print('\n✅ Verification: ')
         print('Verifying that all repositories and gists are properly cloned/updated...')
         self.verify_manager = VerifyManager(
             github_client=self.github_client,
@@ -167,7 +182,7 @@ class AppManager:
 
 
     def _clone_repositories(self, github_client, target_dir):
-        print("\n🔄 Repositories Operations")
+        print("\n🔄 Repositories Operations: ")
         print("Fetching and cloning/updating repositories...")
         self.repo_manager = RepositoriesManager(
             github_client=github_client,
@@ -176,7 +191,7 @@ class AppManager:
         return self.repo_manager.execute()
 
     def _clone_gists(self, github_client, target_dir):
-        print("\n🔄 Gists Operations")
+        print("\n🔄 Gists Operations: ")
         print("Fetching and cloning/updating gists...")
         self.gists_manager = GistsManager(
             github_client=github_client,
