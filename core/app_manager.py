@@ -19,6 +19,7 @@ from core.gists_manager import GistsManager
 from core.report_manager import ReportManager
 from core.repos_manager import RepositoriesManager
 from core.smart_printer import SmartPrinter
+from core.system_action_manager import SystemActionManager
 from core.token_manager import TokenManager
 from core.verify_manager import VerifyManager
 
@@ -36,6 +37,7 @@ class AppManager:
         self.verify_manager = None
         self.report_manager = None
         self.archive_manager = None
+        self.system_action_manager = None
 
     def _signal_handler(self, signum, frame):
         _ = signum, frame
@@ -143,7 +145,21 @@ class AppManager:
             if not archive_status:
                 print("❌ Archive creation error!")
 
+        if self.args_manager.args.shutdown or self.args_manager.args.reboot:
+            system_action_status = self._start_system_actions()
+            if not system_action_status:
+                print("❌ System action error!")
+
         self._show_footer()
+
+    def _start_system_actions(self):
+        print("\n⚡ System Actions: ")
+        print("Executing system actions (shutdown/reboot)")
+        self.system_action_manager = SystemActionManager(
+            shutdown_flag=self.args_manager.args.shutdown,
+            reboot_flag=self.args_manager.args.reboot
+        )
+        return self.system_action_manager.execute()
 
     def _create_archive(self):
         print("\n🗄️ Archive Creation: ")
