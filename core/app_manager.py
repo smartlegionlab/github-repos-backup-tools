@@ -1,16 +1,35 @@
+# --------------------------------------------------------
+# Licensed under the terms of the BSD 3-Clause License
+# (see LICENSE for details).
+# Copyright © 2025, Alexander Suvorov
+# All rights reserved.
+# --------------------------------------------------------
+# https://github.com/smartlegionlab/
+# --------------------------------------------------------
+import os
+import signal
 import sys
 
 from core.arguments_parser import ArgumentsParser
 from core.config import Config, ConfigPathManager
 from core.smart_printer import SmartPrinter
+from core.token_manager import TokenManager
 
 
 class AppManager:
     def __init__(self):
         self.printer = SmartPrinter()
         self.config = Config()
+        self.token_manager = None
+
+    def _signal_handler(self, signum, frame):
+        _ = signum, frame
+        print(f"\n\n🛑 Received Ctrl+C - exiting immediately\n")
+        self._show_footer()
+        os._exit(1)
 
     def run(self):
+        signal.signal(signal.SIGINT, self._signal_handler)
         self._show_header()
         args = self._parse_args()
 
@@ -18,27 +37,51 @@ class AppManager:
             print('❌ Error! No arguments found...')
             self._exit()
 
-        config_path = self._get_config_path()
+        config_file = self._create_config()
 
-        if not config_path:
-            print('❌ Error creating configuration directory...')
+        if not config_file:
+            print('❌ Error creating configuration...')
             self._exit()
+
+        print(f"\n📁 Configuration directory: {config_file}")
+
+        self.token_manager = TokenManager(config_file)
+
+        token = self._get_token()
+
+        if not token:
+            print('❌ Failed to get token')
+            self._exit()
+
+        print('\n✅ Token obtained successfully')
+
+        if args.token:
+            self._update_token()
+
+    def _update_token(self):
+        print('\n🔑 Update GitHub token: ')
+        print('WARNING! Old token will be completely deleted!\n')
+        choice = input('Update token [y|n]: ')
+        if choice == 'y':
+            self.token_manager.delete_config()
+            self.token_manager.get_token()
+        self._exit()
+
+    @staticmethod
+    def _create_config():
+        print('\n⚙️ Configuration Setup: ')
+        print("Checking and setting up configuration directories")
+        config_file = ConfigPathManager.ensure_config_exists()
+        return config_file
+
+    def _get_token(self):
+        print('\n🔑 Getting GitHub token: ')
+        token = self.token_manager.get_token()
+        return token
 
     def _exit(self):
         self._show_footer()
         sys.exit(0)
-
-    def _get_config_path(self):
-        print('\n⚙️ Configuration Setup: ')
-        print("Checking and setting up configuration directories")
-        try:
-            config_path_man = self.config_path_man = ConfigPathManager()
-            config_path = config_path_man.config_dir
-            print(f"\n📁 Configuration directory: {config_path}")
-            return config_path
-        except Exception as e:
-            print(e)
-            return False
 
     @staticmethod
     def _parse_args():
@@ -46,7 +89,7 @@ class AppManager:
         print('Parsing command line arguments...')
         parser = ArgumentsParser()
         args = parser.args
-        if not any([args.repos, args.gists]):
+        if not any([args.repos, args.gists, args.token]):
             parser.parser.print_usage()
             print("\n❌ Error: Specify at least one backup operation (-r or -g)")
             return False
