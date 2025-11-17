@@ -8,25 +8,17 @@
 # --------------------------------------------------------
 import os
 import platform
-from typing import Dict, Any
-from core.steps.base import BaseStep
 
 
-class SystemActionsStep(BaseStep):
-    def __init__(self):
-        super().__init__(
-            name="⚡ System Actions",
-            description="Executing system actions (shutdown/reboot)"
-        )
+class SystemActionManager:
+    def __init__(self, shutdown_flag=False, reboot_flag=False):
+        self.shutdown_flag = shutdown_flag
+        self.reboot_flag = reboot_flag
 
-    def execute(self, context: Dict[str, Any]) -> bool:
-        print(f"🔧 {self.description}...")
-
-        args = context.get('args', {})
-
-        if getattr(args, 'shutdown', False):
+    def execute(self):
+        if self.shutdown_flag:
             return self._shutdown_system()
-        elif getattr(args, 'reboot', False):
+        elif self.reboot_flag:
             return self._reboot_system()
         else:
             print("⚠️ No system actions requested - skipping")

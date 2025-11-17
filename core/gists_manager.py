@@ -9,52 +9,39 @@
 import os
 import shutil
 import subprocess
-from typing import Dict, Any
-from core.steps.base import BaseStep
-from core.tools.progress_bar import ProgressBar
+
+from core.utils.progress_bar import ProgressBar
 
 
-class GistsStep(BaseStep):
-    def __init__(self):
-        super().__init__(
-            name="🔄 Gists Operations",
-            description="Fetching and cloning/updating gists"
-        )
-        self.verbose = False
-
-    def execute(self, context: Dict[str, Any]) -> bool:
-        print(f"🔧 {self.description}...")
-
-        args = context.get('args', {})
-        github_client = context.get('github_client')
-        backup_path = context.get('backup_path')
-
-        if not getattr(args, 'gists', False):
-            print("⚠️ Gists backup not requested - skipping")
-            return True
-
-        if not github_client or not backup_path:
-            print("❌ Missing required context data")
-            return False
-
-        timeout = getattr(args, 'timeout', 30)
-        verbose = getattr(args, 'verbose', False)
+class GistsManager:
+    def __init__(self, github_client, gists_target_dir, verbose=False, timeout=30, max_retries=3):
+        self.github_client = github_client
+        self.gists_target_dir = gists_target_dir
         self.verbose = verbose
+        self.timeout = timeout
+        self.max_retries = max_retries
+        self.failed_gists = {}
 
-        print("📝 Fetching gists...")
-        github_client.fetch_gists(max_retries=3, timeout=timeout)
-        gists_count = len(github_client.gists)
-        print(f"✅ Found {gists_count} gists")
+    def execute(self):
+        try:
+            self.github_client.fetch_gists(max_retries=self.max_retries, timeout=self.timeout)
+            gists_count = len(self.github_client.gists)
+            print(f"✅ Found {gists_count} gists")
 
-        if gists_count == 0:
-            print("⚠️ No gists to process")
-            return True
+            if gists_count == 0:
+                print("⚠️ No gists to process")
+                return True
 
-        gists_target_dir = os.path.join(backup_path, "gists")
-        failed_gists = self._clone_items(gists_target_dir, github_client.gists, "gists", timeout, verbose)
-        context['failed_gists'] = failed_gists
-
-        self.success = True
+            self.failed_gists = self._clone_items(
+                target_dir=self.gists_target_dir,
+                items=self.github_client.gists,
+                item_type="gists",
+                timeout=self.timeout,
+                verbose=self.verbose
+            )
+        except Exception as e:
+            print(e)
+            return False
         return True
 
     def _clone_items(self, target_dir: str, items: dict, item_type: str, timeout: int, verbose: bool) -> dict:

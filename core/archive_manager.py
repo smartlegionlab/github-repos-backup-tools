@@ -9,48 +9,37 @@
 import os
 import shutil
 from datetime import datetime
-from typing import Dict, Any
-from core.steps.base import BaseStep
-from core.tools.archive_creator import ArchiveCreator
+
+from core.utils.archive_creator import ArchiveCreator
 
 
-class ArchiveStep(BaseStep):
-    def __init__(self):
-        super().__init__(
-            name="🗄️ Archive Creation",
-            description="Creating backup archive"
-        )
+class ArchiveManager:
 
-    def execute(self, context: Dict[str, Any]) -> bool:
-        print(f"🔧 {self.description}...")
+    def __init__(self, backup_path, github_login):
+        self.backup_path = backup_path
+        self.github_login = github_login
 
-        args = context.get('args', {})
-        backup_path = context.get('backup_path')
-        github_login = context.get('github_login')
-
-        if not getattr(args, 'archive', False):
-            print("⚠️ Archive creation not requested - skipping")
-            return True
-
-        if not backup_path:
+    def execute(self):
+        if not self.backup_path:
             print("❌ No backup path found in context")
             return False
 
-        if not os.path.exists(backup_path):
+        if not os.path.exists(self.backup_path):
             print("❌ Backup directory does not exist")
             return False
 
-        print("🗄 Creating backup archive...")
+        print("Creating backup archive...")
+
         try:
-            archive_path = self._create_archive_in_home(backup_path, github_login)
+            archive_path = self._create_archive_in_home(self.backup_path, self.github_login)
             print(f"✅ Archive created successfully: {archive_path}")
-            self.success = True
             return True
         except Exception as e:
             print(f"❌ Failed to create archive: {e}")
             return False
 
     def _create_archive_in_home(self, backup_path: str, github_login: str = None) -> str:
+
         if github_login:
             base_name = f"github_{github_login}"
         else:

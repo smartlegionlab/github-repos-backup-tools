@@ -8,58 +8,54 @@
 # --------------------------------------------------------
 import os
 import subprocess
-from typing import Dict, Any
-from core.steps.base import BaseStep
 
 
-class VerificationStep(BaseStep):
-    def __init__(self):
-        super().__init__(
-            name="✅ Verification",
-            description="Verifying that all repositories and gists are properly cloned/updated"
-        )
+class VerifyManager:
+    def __init__(self, github_client, backup_path, failed_repos, failed_gists, repo_flag=False, gists_flag=False):
+        self.github_client = github_client
+        self.backup_path = backup_path
+        self.failed_repos = failed_repos or {}
+        self.failed_gists = failed_gists or {}
+        self.total_success = True
+        self.repo_flag = repo_flag
+        self.gists_flag = gists_flag
 
-    def execute(self, context: Dict[str, Any]) -> bool:
-        print(f"🔧 {self.description}...")
+    def execute(self):
 
-        args = context.get('args', {})
-        backup_path = context.get('backup_path')
-        github_client = context.get('github_client')
-
-        if not backup_path or not github_client:
-            print("❌ Missing required context data")
-            return False
-
-        total_success = True
-
-        if getattr(args, 'repos', False) and github_client.repositories:
-            success = self._verify_items(backup_path, "repositories", github_client.repositories, "repositories")
+        if self.repo_flag:
+            success = self._verify_items(
+                backup_path=self.backup_path,
+                folder_name="repositories",
+                items=self.github_client.repositories,
+                item_type="repositories"
+            )
             if not success:
-                total_success = False
+                self.total_success = False
 
-        if getattr(args, 'gists', False) and github_client.gists:
-            success = self._verify_items(backup_path, "gists", github_client.gists, "gists")
+        if self.gists_flag:
+            success = self._verify_items(
+                backup_path=self.backup_path,
+                folder_name="gists",
+                items=self.github_client.gists,
+                item_type="gists"
+            )
             if not success:
-                total_success = False
+                self.total_success = False
 
-        failed_repos = context.get('failed_repos', {})
-        failed_gists = context.get('failed_gists', {})
+        if self.failed_repos:
+            print(f"❌ {len(self.failed_repos)} repositories failed to clone/update")
+            self.total_success = False
 
-        if failed_repos:
-            print(f"❌ {len(failed_repos)} repositories failed to clone/update")
-            total_success = False
+        if self.failed_gists:
+            print(f"❌ {len(self.failed_gists)} gists failed to clone/update")
+            self.total_success = False
 
-        if failed_gists:
-            print(f"❌ {len(failed_gists)} gists failed to clone/update")
-            total_success = False
-
-        if total_success:
+        if self.total_success:
             print("✅ All items verified successfully!")
         else:
             print("⚠️ Some items have issues - check logs above")
+        return self.total_success
 
-        self.success = total_success
-        return total_success
 
     def _verify_items(self, backup_path: str, folder_name: str, items: dict, item_type: str) -> bool:
         target_dir = os.path.join(backup_path, folder_name)
@@ -111,5 +107,6 @@ class VerificationStep(BaseStep):
                 timeout=10
             )
             return result.returncode == 0
-        except Exception:
+        except Exception as e:
+            print(e)
             return False

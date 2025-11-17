@@ -10,52 +10,39 @@ import os
 import shutil
 import subprocess
 from datetime import datetime, timezone
-from typing import Dict, Any
-from core.steps.base import BaseStep
-from core.tools.progress_bar import ProgressBar
+
+from core.utils.progress_bar import ProgressBar
 
 
-class RepositoriesStep(BaseStep):
-    def __init__(self):
-        super().__init__(
-            name="🔄 Repositories Operations",
-            description="Fetching and cloning/updating repositories"
-        )
-        self.verbose = False
-
-    def execute(self, context: Dict[str, Any]) -> bool:
-        print(f"🔧 {self.description}...")
-
-        args = context.get('args', {})
-        github_client = context.get('github_client')
-        backup_path = context.get('backup_path')
-
-        if not getattr(args, 'repos', False):
-            print("⚠️ Repository backup not requested - skipping")
-            return True
-
-        if not github_client or not backup_path:
-            print("❌ Missing required context data")
-            return False
-
-        timeout = getattr(args, 'timeout', 30)
-        verbose = getattr(args, 'verbose', False)
+class RepositoriesManager:
+    def __init__(self, github_client, repos_target_dir, verbose=False, timeout=30, max_retries=3):
+        self.github_client = github_client
+        self.repos_target_dir = repos_target_dir
         self.verbose = verbose
+        self.timeout = timeout
+        self.max_retries = max_retries
+        self.failed_repos = {}
 
-        print("📦 Fetching repositories...")
-        github_client.fetch_repositories(max_retries=3, timeout=timeout)
-        repos_count = len(github_client.repositories)
-        print(f"✅ Found {repos_count} repositories")
+    def execute(self):
+        try:
+            self.github_client.fetch_repositories(max_retries=self.max_retries, timeout=self.timeout)
+            repos_count = len(self.github_client.repositories)
+            print(f"✅ Found {repos_count} repositories")
 
-        if repos_count == 0:
-            print("⚠️ No repositories to process")
-            return True
+            if repos_count == 0:
+                print("⚠️ No repositories to process")
+                return True
 
-        repos_target_dir = os.path.join(backup_path, "repositories")
-        failed_repos = self._clone_items(repos_target_dir, github_client.repositories, "repositories", timeout, verbose)
-        context['failed_repos'] = failed_repos
-
-        self.success = True
+            self.failed_repos = self._clone_items(
+                target_dir=self.repos_target_dir,
+                items=self.github_client.repositories,
+                item_type="repositories",
+                timeout=self.timeout,
+                verbose=self.verbose
+            )
+        except Exception as e:
+            print(e)
+            return False
         return True
 
     def _clone_items(self, target_dir: str, items: dict, item_type: str, timeout: int, verbose: bool) -> dict:
@@ -182,7 +169,8 @@ class RepositoriesStep(BaseStep):
             time_diff = github_date_utc - local_date_utc
             return time_diff.total_seconds() > 300
 
-        except Exception:
+        except Exception as e:
+            print(e)
             return True
 
     def _get_local_commit_date(self, repo_path: str) -> datetime:
@@ -218,7 +206,8 @@ class RepositoriesStep(BaseStep):
 
             return datetime.min
 
-        except Exception:
+        except Exception as e:
+            print(e)
             return datetime.min
 
     def _git_clone(self, url: str, item_path: str, timeout: int) -> bool:
@@ -237,7 +226,8 @@ class RepositoriesStep(BaseStep):
 
         except subprocess.TimeoutExpired:
             return False
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
 
     def _git_pull(self, item_path: str, timeout: int) -> bool:
@@ -256,7 +246,8 @@ class RepositoriesStep(BaseStep):
 
         except subprocess.TimeoutExpired:
             return False
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
 
     def _verify_git_repo_health(self, repo_path: str) -> bool:
