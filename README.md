@@ -1,31 +1,17 @@
 # GitHub Repositories Backup Tools <sup>v1.0.2</sup>
 
+
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/smartlegionlab/github-repos-backup-tools)](https://github.com/smartlegionlab/github-repos-backup-tools/releases)
 ![GitHub top language](https://img.shields.io/github/languages/top/smartlegionlab/github-repos-backup-tools)
 [![GitHub](https://img.shields.io/github/license/smartlegionlab/github-repos-backup-tools)](https://github.com/smartlegionlab/github-repos-backup-tools/blob/master/LICENSE)
+![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
+![Platform](https://img.shields.io/badge/platform-windows%20%7C%20linux%20%7C%20macos%20%7C%20termux-lightgrey)
+![GitHub last commit](https://img.shields.io/github/last-commit/smartlegionlab/github-repos-backup-tools)
+![GitHub Stars](https://img.shields.io/github/stars/smartlegionlab/github-repos-backup-tools?style=social)
 
-> Professional modular solution for automatic cloning and backup of GitHub repositories and gists with step-by-step execution pipeline
+> Professional modular solution for automatic cloning and backup of GitHub repositories and gists with
 
 ---
-
-## 🎯 What's New in v1.0.2
-
-### 🏗️ Completely Rewritten Architecture
-- **Modular Step-by-Step Pipeline** - Each operation is now an independent step
-- **Enhanced Error Handling** - Graceful failure recovery at each stage
-- **Context Management** - Shared data between steps with proper isolation
-- **Extensible Design** - Easy to add new steps and functionality
-
-### 🔧 New Step-Based System
-1. **Arguments Parsing** - Command line interface with validation
-2. **Configuration Setup** - Secure token management
-3. **GitHub Authentication** - Token validation and user verification
-4. **Directory Setup** - Organized backup structure
-5. **Operations** - Smart cloning/updating with retry logic
-6. **Verification** - Integrity checks for all backups
-7. **Reporting** - Comprehensive backup summary
-8. **Archiving** - Optional compression with timestamps
-9. **System Actions** - Shutdown/reboot options
 
 ## 🚀 Key Features
 
@@ -97,6 +83,7 @@ ssh -T git@github.com
 |---------|-------------|
 | `-r` | Backup repositories |
 | `-g` | Backup gists |
+| `-t` | Update token |
 | `--archive` | Create compressed backup archive |
 | `--verbose` | Detailed debug output |
 | `--timeout N` | Git operation timeout (seconds) |
@@ -128,6 +115,9 @@ python app.py -r -g --reboot
 
 # Debug mode with custom timeout
 python app.py -r --verbose --timeout 60
+
+# Update token
+python app.py -t
 ```
 
 ## 📂 Backup Structure
@@ -138,22 +128,6 @@ python app.py -r --verbose --timeout 60
 │   ├── repositories/                  # All cloned repositories
 │   └── gists/                         # All cloned gists
 └── github_[username]_YYYY-MM-DD_HH_MM_SS.zip  # Auto-generated archive
-```
-
-## 🔧 Technical Architecture
-
-### Step Pipeline
-```python
-ArgumentsStep() # CLI parsing
-ConfigurationStep() # Token management
-AuthenticationStep() # GitHub auth
-DirectorySetupStep() # Folder structure
-RepositoriesStep() # Repositories operations
-GistsStep() # Gist operations
-VerificationStep() # Integrity check
-ReportStep() # Summary report
-ArchiveStep() # Compression
-SystemActionsStep() # Power management
 ```
 
 ### Smart Update System
@@ -196,7 +170,6 @@ A: Verify SSH key is added to GitHub and test with `ssh -T git@github.com`
 ## 📝 Changelog
 
 ### v1.0.2 Major Release
-- **Complete architectural rewrite** with modular step system
 - **Enhanced error handling** and recovery mechanisms  
 - **Smart update detection** with 5-minute threshold
 - **Improved security** with path validation and token storage
@@ -267,152 +240,3 @@ THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. Use at your own r
 </div>
 
 ---
-
-## 🎨 Application Flow
-
-```
-********************************************************************************
------------------------ Github Repositories Backup Tools -----------------------
---------------------------------------------------------------------------------
-
-
-==================================================
-STEP 1: 🔧 Arguments Parsing
-==================================================
-🔧 Parsing command line arguments...
-📋 Parsed arguments:
-   Backup: 📦 Repositories, 📝 Gists
-   Timeout: 30s
-   Verbose: ❌ Disabled
-   Power: ❌ No action
-✅ Step 1 completed: 🔧 Arguments Parsing
-
-==================================================
-STEP 2: ⚙️ Configuration Setup
-==================================================
-🔧 Checking and setting up configuration directories and tokens...
-📁 Configuration directory: /home/user_name/.config/github_repos_backup_tools
-✅ Token found in configuration
-✅ Token received successfully
-✅ Step 2 completed: ⚙️ Configuration Setup
-
-==================================================
-STEP 3: 🔑 GitHub Authentication
-==================================================
-🔧 Authenticating with GitHub...
-🔑 Validating GitHub token...
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.5s)
-✅ Authenticated as: github_user_name
-✅ Step 3 completed: 🔑 GitHub Authentication
-
-==================================================
-STEP 4: 📁 Directory Setup
-==================================================
-🔧 Creating backup directory structure...
-📁 Main backup directory: /home/user_name/github_user_name_github_backup
-📂 Creating subdirectories:
-   ✅ repositories/
-   ✅ gists/
-✅ Step 4 completed: 📁 Directory Setup
-
-==================================================
-STEP 5: 🔄 Repositories Operations
-==================================================
-🔧 Fetching and cloning/updating repositories...
-📦 Fetching repositories...
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.9s)
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (1.0s)
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (1.0s)
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.5s)
-✅ Found 100 repositories
-
-📦 Processing 100 repositories...
-[##########] 100.00% | 100/100 | Failed: 1 | Processing: github_user_name/webpa...
-🔄 Retrying 1 failed repositories...
-
-🔄 Retrying 1 failed repositories...
-[##########] 100.00% | 1/1 | Failed: 0 | Retrying: github_user_name/github-ssh-...
-✅ All repositories processed successfully after retry!
-
-✅ All repositories processed successfully after retry
-✅ Step 5 completed: 🔄 Repositories Operations
-
-==================================================
-STEP 6: 🔄 Gists Operations
-==================================================
-🔧 Fetching and cloning/updating gists...
-📝 Fetching gists...
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.5s)
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.4s)
-✅ Found 1 gists
-
-📝 Processing 1 gists...
-[##########] 100.00% | 1/1 | Failed: 0 | Processing: a2e7733c3ba32963b7c0985e...
-✅ Cloning/updating gists completed successfully!
-
-✅ Step 6 completed: 🔄 Gists Operations
-
-==================================================
-STEP 7: ✅ Verification
-==================================================
-🔧 Verifying that all repositories and gists are properly cloned/updated...
-📊 Repositories verification:
-   Total: 100
-   Valid: 100
-   Missing: 0
-📊 Gists verification:
-   Total: 1
-   Valid: 1
-   Missing: 0
-✅ All items verified successfully!
-✅ Step 7 completed: ✅ Verification
-
-==================================================
-STEP 8: 📊 Report
-==================================================
-🔧 Generating backup report...
-
-============================================================
-📊 BACKUP REPORT
-============================================================
-
-📦 REPOSITORIES:
-   Total: 100
-   ✅ Successful: 100
-   ❌ Failed: 0
-   🎉 All repositories processed successfully!
-
-📝 GISTS:
-   Total: 1
-   ✅ Successful: 1
-   ❌ Failed: 0
-   🎉 All gists processed successfully!
-
-💾 BACKUP LOCATION:
-   /home/user_name/github_user_name_github_backup
-
-🎉 SUCCESS: All backup operations completed successfully!
-============================================================
-✅ Step 8 completed: 📊 Report
-
-==================================================
-STEP 9: 🗄️ Archive Creation
-==================================================
-🔧 Creating backup archive...
-⚠️ Archive creation not requested - skipping
-✅ Step 9 completed: 🗄️ Archive Creation
-
-==================================================
-STEP 10: ⚡ System Actions
-==================================================
-🔧 Executing system actions (shutdown/reboot)...
-⚠️ No system actions requested - skipping
-✅ Step 10 completed: ⚡ System Actions
---------------------------------------------------------------------------------
----------------------- https://github.com/smartlegionlab/ ----------------------
---------------------- Copyright © 2025, Alexander Suvorov ----------------------
-********************************************************************************
-
-👋 Backup process finished
-
-```

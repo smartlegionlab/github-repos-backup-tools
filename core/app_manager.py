@@ -204,7 +204,8 @@ class AppManager:
         print("Fetching and cloning/updating repositories...")
         self.repo_manager = RepositoriesManager(
             github_client=github_client,
-            repos_target_dir=target_dir
+            repos_target_dir=target_dir,
+            verbose=self.args_manager.args.verbose
         )
         return self.repo_manager.execute()
 
@@ -213,7 +214,8 @@ class AppManager:
         print("Fetching and cloning/updating gists...")
         self.gists_manager = GistsManager(
             github_client=github_client,
-            gists_target_dir=target_dir
+            gists_target_dir=target_dir,
+            verbose=self.args_manager.args.verbose
         )
         return self.gists_manager.execute()
 
