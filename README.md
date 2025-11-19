@@ -1,4 +1,4 @@
-# GitHub Repositories Backup Tools <sup>v1.0.2</sup>
+# GitHub Repositories Backup Tools <sup>v1.1.0</sup>
 
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/smartlegionlab/github-repos-backup-tools)](https://github.com/smartlegionlab/github-repos-backup-tools/releases)
@@ -10,6 +10,10 @@
 ![GitHub Stars](https://img.shields.io/github/stars/smartlegionlab/github-repos-backup-tools?style=social)
 
 > Professional modular solution for automatic cloning and backup of GitHub repositories and gists with
+
+---
+
+**⚠️ IMPORTANT NOTE**: If you experience any issues with `v1.1.0`, please report them in the [Issues section](https://github.com/smartlegionlab/github-repos-backup-tools/issues) and temporarily use the latest stable version `v0.9.4` while we investigate.
 
 ---
 
@@ -167,27 +171,9 @@ A: Use `shutdown -c` (Linux/macOS) or `shutdown /a` (Windows)
 **Q: SSH connection fails?**  
 A: Verify SSH key is added to GitHub and test with `ssh -T git@github.com`
 
-## 📝 Changelog
-
-### v1.0.2 Major Release
-- **Enhanced error handling** and recovery mechanisms  
-- **Smart update detection** with 5-minute threshold
-- **Improved security** with path validation and token storage
-- **Secure token management** - automatic setup on first run with encrypted storage
-- **Better user experience** with structured output and progress tracking
-- **Mutually exclusive power options** (`--shutdown`/`--reboot`)
-- **Comprehensive verification** and reporting system
-- **Instant process termination** with single Ctrl+C
-
-### v0.9.4 Features
-- Stable release with basic backup functionality
-- Archive creation support
-- Basic retry mechanism
-- Progress bar implementation
-
 ---
 
-**⚠️ IMPORTANT NOTE**: If you experience any issues with v1.0.2, please report them in the [Issues section](https://github.com/smartlegionlab/github-repos-backup-tools/issues) and temporarily use the latest stable version v0.9.4 while we investigate.
+**⚠️ IMPORTANT NOTE**: If you experience any issues with v1.1.0, please report them in the [Issues section](https://github.com/smartlegionlab/github-repos-backup-tools/issues) and temporarily use the latest stable version v0.9.4 while we investigate.
 
 ---
 
@@ -240,3 +226,106 @@ THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. Use at your own r
 </div>
 
 ---
+
+## OUTPUT
+
+```text
+********************************************************************************
+----------------------- Github Repositories Backup Tools -----------------------
+--------------------------------------------------------------------------------
+
+
+🔧 Arguments Parsing: 
+Parsing command line arguments...
+
+📋 Parsed arguments:
+   Backup: 📦 Repositories, 📝 Gists, 🗄 Archive
+   Timeout: 30s
+   Verbose: ❌ Disabled
+   Power: ❌ No action
+
+⚙️ Configuration Setup: 
+Checking and setting up configuration directories
+
+📁 Configuration directory: /home/user_name/.config/github_repos_backup_tools/github_token.json
+
+🔑 Getting GitHub token: 
+
+✅ Token obtained successfully
+
+🔑 GitHub Authentication: 
+Authenticating with GitHub...
+   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.5s)
+✅ Authenticated as: user_name
+
+📁 Directory Setup: 
+Creating backup directory structure...
+📁 Main backup directory: /home/user_name/user_name_github_backup
+   ✅ repositories/
+   ✅ gists/
+
+🔄 Repositories Operations: 
+Fetching and cloning/updating repositories...
+   🔄 Attempt 1/3 (timeout: 30s)... ✅ (2.0s)
+   🔄 Attempt 1/3 (timeout: 30s)... ✅ (2.1s)
+   🔄 Attempt 1/3 (timeout: 30s)... ✅ (2.1s)
+   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.5s)
+✅ Found 100 repositories
+
+📦 Processing 100 repositories...
+[##########] 100.00% | 100/100 | Failed: 0 | Processing: user_name/repo_name_...
+✅ Cloning/updating repositories completed successfully!
+
+
+🔄 Gists Operations: 
+Fetching and cloning/updating gists...
+   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.5s)
+   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.4s)
+✅ Found 1 gists
+
+📝 Processing 1 gists...
+[##########] 100.00% | 1/1 | Failed: 0 | Processing: a2e7733c3ba32963b7c0985e...
+✅ Cloning/updating gists completed successfully!
+
+
+✅ Verification: 
+Verifying that all repositories and gists are properly cloned/updated...
+📊 Repositories verification:
+   Total: 100
+   Valid: 100
+   Missing: 0
+📊 Gists verification:
+   Total: 1
+   Valid: 1
+   Missing: 0
+✅ All items verified successfully!
+
+📊 Report: 
+Generating backup report...
+
+📦 REPOSITORIES:
+   Total: 100
+   ✅ Successful: 100
+   ❌ Failed: 0
+   🎉 All repositories processed successfully!
+
+📝 GISTS:
+   Total: 1
+   ✅ Successful: 1
+   ❌ Failed: 0
+   🎉 All gists processed successfully!
+
+💾 BACKUP LOCATION:
+   /home/user_name/user_name_github_backup
+
+🎉 SUCCESS: All backup operations completed successfully!
+============================================================
+
+🗄️ Archive Creation: 
+Creating backup archive...
+✅ Archive created successfully: /home/user_name/github_user_name_2025-11-19_18_11_46.zip
+--------------------------------------------------------------------------------
+---------------------- https://github.com/smartlegionlab/ ----------------------
+--------------------- Copyright © 2025, Alexander Suvorov ----------------------
+********************************************************************************
+```
