@@ -1,5 +1,10 @@
-# GitHub Repositories Backup Tools <sup>v1.1.0</sup>
+# GitHub Repositories Backup Tools <sup>v1.1.1</sup>
 
+---
+
+> A professional, modular solution for automatically cloning and backing up GitHub repositories and GIST files.
+
+---
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/smartlegionlab/github-repos-backup-tools)](https://github.com/smartlegionlab/github-repos-backup-tools/releases)
 ![GitHub top language](https://img.shields.io/github/languages/top/smartlegionlab/github-repos-backup-tools)
@@ -8,12 +13,6 @@
 ![Platform](https://img.shields.io/badge/platform-windows%20%7C%20linux%20%7C%20macos%20%7C%20termux-lightgrey)
 ![GitHub last commit](https://img.shields.io/github/last-commit/smartlegionlab/github-repos-backup-tools)
 ![GitHub Stars](https://img.shields.io/github/stars/smartlegionlab/github-repos-backup-tools?style=social)
-
-> Professional modular solution for automatic cloning and backup of GitHub repositories and gists with
-
----
-
-**⚠️ IMPORTANT NOTE**: If you experience any issues with `v1.1.0`, please report them in the [Issues section](https://github.com/smartlegionlab/github-repos-backup-tools/issues) and temporarily use the latest stable version `v0.9.4` while we investigate.
 
 ---
 
@@ -83,14 +82,14 @@ ssh -T git@github.com
 ## 💻 Usage
 
 ### Basic Commands
-| Command | Description |
-|---------|-------------|
-| `-r` | Backup repositories |
-| `-g` | Backup gists |
-| `-t` | Update token |
-| `--archive` | Create compressed backup archive |
-| `--verbose` | Detailed debug output |
-| `--timeout N` | Git operation timeout (seconds) |
+| Command        | Description |
+|----------------|-------------|
+| `-r`           | Backup repositories |
+| `-g`           | Backup gists |
+| `-t`           | Update token |
+| `--no-archive` | Disable backup archive creation (archive is created by default |
+| `--verbose`    | Detailed debug output |
+| `--timeout N`  | Git operation timeout (seconds) |
 
 ### Power Management
 | Command | Description |
@@ -102,22 +101,22 @@ ssh -T git@github.com
 
 ### Common Usage Examples
 ```bash
-# Basic repository backup
+# Basic repository backup with archive creation
 python app.py -r
 
-# Complete backup (repos + gists)
+# Complete backup (repos + gists) with archive creation
 python app.py -r -g
 
-# Backup with archive creation
-python app.py -r -g --archive
+# # Backup without creating an archive
+python app.py -r -g --no-archive
 
-# Backup with system shutdown
+# Backup with system shutdown with archive creation
 python app.py -r -g --shutdown
 
-# Backup with system reboot
+# Backup with system reboot with archive creation
 python app.py -r -g --reboot
 
-# Debug mode with custom timeout
+# Debug mode with custom timeout with archive creation
 python app.py -r --verbose --timeout 60
 
 # Update token
@@ -131,7 +130,7 @@ python app.py -t
 ├── [username]_github_backup/          # Main backup directory
 │   ├── repositories/                  # All cloned repositories
 │   └── gists/                         # All cloned gists
-└── github_[username]_YYYY-MM-DD_HH_MM_SS.zip  # Auto-generated archive
+└── [username]_github_backup_YYYY-MM-DD_HH_MM_SS.zip  # Auto-generated archive
 ```
 
 ### Smart Update System
@@ -170,10 +169,6 @@ A: Use `shutdown -c` (Linux/macOS) or `shutdown /a` (Windows)
 
 **Q: SSH connection fails?**  
 A: Verify SSH key is added to GitHub and test with `ssh -T git@github.com`
-
----
-
-**⚠️ IMPORTANT NOTE**: If you experience any issues with v1.1.0, please report them in the [Issues section](https://github.com/smartlegionlab/github-repos-backup-tools/issues) and temporarily use the latest stable version v0.9.4 while we investigate.
 
 ---
 
