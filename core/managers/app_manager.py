@@ -10,18 +10,18 @@ import os
 import signal
 import sys
 
-from core.archive_manager import ArchiveManager
-from core.args_manager import ArgumentsManager
-from core.auth_manager import GithubAuthManager
-from core.config_manager import Config, ConfigPathManager
-from core.directory_manager import DirectoryManager
-from core.gists_manager import GistsManager
-from core.report_manager import ReportManager
-from core.repos_manager import RepositoriesManager
+from core.managers.archive_manager import ArchiveManager
+from core.managers.args_manager import ArgumentsManager
+from core.managers.auth_manager import GithubAuthManager
+from core.managers.config_manager import Config, ConfigPathManager
+from core.managers.directory_manager import DirectoryManager
+from core.managers.gists_manager import GistsManager
+from core.managers.report_manager import ReportManager
+from core.managers.repos_manager import RepositoriesManager
 from core.utils.smart_printer import SmartPrinter
-from core.system_action_manager import SystemActionManager
-from core.token_manager import TokenManager
-from core.verify_manager import VerifyManager
+from core.managers.system_action_manager import SystemActionManager
+from core.managers.token_manager import TokenManager
+from core.managers.verify_manager import VerifyManager
 
 
 class AppManager:

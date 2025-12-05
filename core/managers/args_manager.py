@@ -46,9 +46,11 @@ class ArgumentsManager:
             help="Update token"
         )
         parser.add_argument(
-            "--archive",
-            action="store_true",
-            help="Create backup archive"
+            "--no-archive",
+            action="store_false",
+            dest="archive",
+            default=True,
+            help="Disable backup archive creation (archive is created by default)"
         )
         parser.add_argument(
             "--timeout",
