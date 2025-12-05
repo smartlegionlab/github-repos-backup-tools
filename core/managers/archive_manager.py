@@ -39,13 +39,8 @@ class ArchiveManager:
             return False
 
     def _create_archive_in_home(self, backup_path: str, github_login: str = None) -> str:
-
-        if github_login:
-            base_name = f"github_{github_login}"
-        else:
-            base_name = "github_backup"
-
         current_time = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
+        base_name = f"{github_login}_github_backup" if github_login else "github_backup"
         archive_name = f"{base_name}_{current_time}"
 
         home_directory = os.path.expanduser('~')
