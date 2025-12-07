@@ -233,13 +233,13 @@ THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. Use at your own r
 🔧 Arguments Parsing: 
 Parsing command line arguments...
 
-📋 Parsed arguments:
+Parsed arguments:
    Backup: Repositories, Gists, Archive
    Timeout: 30s
    Verbose: [x] Disabled
    Power: [x] No action
 
-⚙️ Configuration Setup: 
+Configuration Setup: 
 Checking and setting up configuration directories
 
 Configuration directory: /home/user_name/.config/github_repos_backup_tools/github_token.json
