@@ -43,17 +43,17 @@ class VerifyManager:
                 self.total_success = False
 
         if self.failed_repos:
-            print(f"❌ {len(self.failed_repos)} repositories failed to clone/update")
+            print(f"[err] {len(self.failed_repos)} repositories failed to clone/update")
             self.total_success = False
 
         if self.failed_gists:
-            print(f"❌ {len(self.failed_gists)} gists failed to clone/update")
+            print(f"[err] {len(self.failed_gists)} gists failed to clone/update")
             self.total_success = False
 
         if self.total_success:
-            print("✅ All items verified successfully!")
+            print("[ok] All items verified successfully!")
         else:
-            print("⚠️ Some items have issues - check logs above")
+            print("[!] Some items have issues - check logs above")
         return self.total_success
 
 
@@ -61,7 +61,7 @@ class VerifyManager:
         target_dir = os.path.join(backup_path, folder_name)
 
         if not os.path.exists(target_dir):
-            print(f"❌ {item_type} directory not found: {target_dir}")
+            print(f"[err] {item_type} directory not found: {target_dir}")
             return False
 
         missing_items = []
@@ -75,7 +75,7 @@ class VerifyManager:
             else:
                 missing_items.append(name)
 
-        print(f"📊 {item_type.capitalize()} verification:")
+        print(f"{item_type.capitalize()} verification:")
         print(f"   Total: {len(items)}")
         print(f"   Valid: {valid_items}")
         print(f"   Missing: {len(missing_items)}")

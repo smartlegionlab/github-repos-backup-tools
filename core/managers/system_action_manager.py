@@ -21,33 +21,33 @@ class SystemActionManager:
         elif self.reboot_flag:
             return self._reboot_system()
         else:
-            print("⚠️ No system actions requested - skipping")
+            print("[!] No system actions requested - skipping")
             return True
 
     def _shutdown_system(self) -> bool:
-        print("🔄 Shutting down system...")
+        print("[~] Shutting down system...")
         try:
             if platform.system() == "Windows":
                 os.system("shutdown /s /t 60")
             else:
                 os.system("shutdown -h +1")
-            print("✅ Shutdown scheduled in 60 seconds")
+            print("[ok] Shutdown scheduled in 60 seconds")
             self.success = True
             return True
         except Exception as e:
-            print(f"❌ Failed to schedule shutdown: {e}")
+            print(f"[err] Failed to schedule shutdown: {e}")
             return False
 
     def _reboot_system(self) -> bool:
-        print("🔄 Rebooting system...")
+        print("[~] Rebooting system...")
         try:
             if platform.system() == "Windows":
                 os.system("shutdown /r /t 60")
             else:
                 os.system("shutdown -r +1")
-            print("✅ Reboot scheduled in 60 seconds")
+            print("[ok] Reboot scheduled in 60 seconds")
             self.success = True
             return True
         except Exception as e:
-            print(f"❌ Failed to schedule reboot: {e}")
+            print(f"[err] Failed to schedule reboot: {e}")
             return False

@@ -21,21 +21,21 @@ class ArchiveManager:
 
     def execute(self):
         if not self.backup_path:
-            print("❌ No backup path found in context")
+            print("[err] No backup path found in context")
             return False
 
         if not os.path.exists(self.backup_path):
-            print("❌ Backup directory does not exist")
+            print("[err] Backup directory does not exist")
             return False
 
         print("Creating backup archive...")
 
         try:
             archive_path = self._create_archive_in_home(self.backup_path, self.github_login)
-            print(f"✅ Archive created successfully: {archive_path}")
+            print(f"[ok] Archive created successfully: {archive_path}")
             return True
         except Exception as e:
-            print(f"❌ Failed to create archive: {e}")
+            print(f"[err] Failed to create archive: {e}")
             return False
 
     def _create_archive_in_home(self, backup_path: str, github_login: str = None) -> str:

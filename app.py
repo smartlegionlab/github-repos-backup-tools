@@ -6,6 +6,7 @@
 # --------------------------------------------------------
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
+"""A professional, modular solution for automatically cloning and backing up GitHub repositories and GIST files."""
 from core import AppManager
 
 

@@ -56,4 +56,4 @@ class ProgressBar:
 
     def finish(self, message='Progress completed!'):
         # self._clear_line()
-        print(f"\n✅ {message}\n")
+        print(f"\n[ok] {message}\n")

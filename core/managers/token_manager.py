@@ -30,15 +30,15 @@ class TokenManager:
     def delete_config(self) -> bool:
         try:
             if not self.config_file.exists():
-                print("ℹ️ Config file does not exist\n")
+                print("Config file does not exist\n")
                 return True
 
             self.config_file.unlink()
-            print("✅ Config file deleted successfully\n")
+            print("[ok] Config file deleted successfully\n")
             return True
 
         except Exception as e:
-            print(f"❌ Error deleting config file: {e}\n")
+            print(f"[err] Error deleting config file: {e}\n")
             return False
 
     def _request_valid_token(self) -> Optional[str]:
@@ -47,24 +47,24 @@ class TokenManager:
                 token = getpass.getpass("Enter GitHub token: ").strip()
 
                 if not token:
-                    print("❌ Token cannot be empty\n")
+                    print("[err] Token cannot be empty\n")
                     continue
 
                 if not self._validate_token(token):
-                    print("❌ Invalid token format\n")
+                    print("[err] Invalid token format\n")
                     continue
 
                 if self._save_token(token):
                     return token
                 else:
-                    print("❌ Failed to save token\n")
+                    print("[err] Failed to save token\n")
                     return None
 
             except KeyboardInterrupt:
-                print("\n❌ Operation cancelled\n")
+                print("\n[err] Operation cancelled\n")
                 return None
             except Exception as e:
-                print(f"❌ Error: {e}\n")
+                print(f"[err] Error: {e}\n")
                 return None
 
     def _load_token(self) -> Optional[str]:

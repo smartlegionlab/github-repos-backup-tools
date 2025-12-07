@@ -26,10 +26,10 @@ class GistsManager:
         try:
             self.github_client.fetch_gists(max_retries=self.max_retries, timeout=self.timeout)
             gists_count = len(self.github_client.gists)
-            print(f"✅ Found {gists_count} gists")
+            print(f"[ok] Found {gists_count} gists")
 
             if gists_count == 0:
-                print("⚠️ No gists to process")
+                print("[!] No gists to process")
                 return True
 
             self.failed_gists = self._clone_items(
@@ -45,14 +45,14 @@ class GistsManager:
         return True
 
     def _clone_items(self, target_dir: str, items: dict, item_type: str, timeout: int, verbose: bool) -> dict:
-        print(f"\n📝 Processing {len(items)} {item_type}...")
+        print(f"\nProcessing {len(items)} {item_type}...")
 
         failed_dict = {}
         failed_count = 0
 
         if verbose:
             for index, (name, url) in enumerate(items.items(), 1):
-                print(f"\n{index}/{len(items)} 🔍 Processing: {name}")
+                print(f"\n{index}/{len(items)} Processing: {name}")
                 success = self._process_single_item(name, url, target_dir, timeout)
                 if not success:
                     failed_dict[name] = url
@@ -70,7 +70,7 @@ class GistsManager:
                 progress_bar.finish(f'Cloning/updating {item_type} completed successfully!')
 
         if failed_dict:
-            print(f"\n🔄 Retrying {len(failed_dict)} failed {item_type}...")
+            print(f"\n[~] Retrying {len(failed_dict)} failed {item_type}...")
             failed_dict = self._retry_failed_items(failed_dict, target_dir, timeout, verbose)
 
         return failed_dict
@@ -82,19 +82,19 @@ class GistsManager:
             if os.path.exists(item_path):
                 success = self._git_pull(item_path, timeout)
                 if self.verbose:
-                    status = "✅ Updated" if success else "❌ Update failed"
+                    status = "[ok] Updated" if success else "[err] Update failed"
                     print(f"{status}: {name}")
                 return success
             else:
                 success = self._git_clone(url, item_path, timeout)
                 if self.verbose:
-                    status = "✅ Cloned" if success else "❌ Clone failed"
+                    status = "[ok] Cloned" if success else "[err] Clone failed"
                     print(f"{status}: {name}")
                 return success
 
         except Exception as e:
             if self.verbose:
-                print(f"❌ Error processing {name}: {e}")
+                print(f"[err] Error processing {name}: {e}")
             return False
 
     def _retry_failed_items(self, failed_items: dict, target_dir: str, timeout: int, verbose: bool) -> dict:
@@ -106,17 +106,17 @@ class GistsManager:
             remaining_failed.clear()
 
             if verbose:
-                print(f"\n🔄 Retry round: {len(current_failed)} repositories remaining")
+                print(f"\n[~] Retry round: {len(current_failed)} repositories remaining")
                 progress_bar = None
             else:
-                print(f"\n🔄 Retrying {len(current_failed)} failed repositories...")
+                print(f"\n[~] Retrying {len(current_failed)} failed repositories...")
                 progress_bar = ProgressBar()
 
             retry_failed_count = 0
 
             for i, (name, url) in enumerate(current_failed.items(), 1):
                 if verbose:
-                    print(f"🔍 Retrying: {name}")
+                    print(f"Retrying: {name}")
                 else:
                     current_success = total_retries - len(current_failed) + i - retry_failed_count
                     progress_bar.update(current_success, total_retries, retry_failed_count, f"Retrying: {name}")
@@ -139,7 +139,7 @@ class GistsManager:
                 progress_bar.finish(f"All repositories processed successfully after retry!")
 
             if not remaining_failed:
-                print(f"✅ All repositories processed successfully after retry")
+                print(f"[ok] All repositories processed successfully after retry")
 
         return remaining_failed
 
@@ -208,10 +208,10 @@ class GistsManager:
             health_ok = result1.returncode == 0 and result2.returncode == 0
 
             if not health_ok:
-                print(f"⚠️ Gist health check failed: {os.path.basename(repo_path)}")
+                print(f"[!] Gist health check failed: {os.path.basename(repo_path)}")
 
             return health_ok
 
         except Exception as e:
-            print(f"⚠️ Gist health check error {os.path.basename(repo_path)}: {e}")
+            print(f"[!] Gist health check error {os.path.basename(repo_path)}: {e}")
             return False

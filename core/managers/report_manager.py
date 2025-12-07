@@ -23,41 +23,41 @@ class ReportManager:
                 total_repos = len(self.github_client.repositories)
                 successful_repos = total_repos - len(self.failed_repos)
 
-                print(f"\n📦 REPOSITORIES:")
+                print(f"\nREPOSITORIES:")
                 print(f"   Total: {total_repos}")
-                print(f"   ✅ Successful: {successful_repos}")
-                print(f"   ❌ Failed: {len(self.failed_repos)}")
+                print(f"   [ok] Successful: {successful_repos}")
+                print(f"   [err] Failed: {len(self.failed_repos)}")
 
                 if self.failed_repos:
                     print(f"   Failed items: {', '.join(list(self.failed_repos.keys())[:3])}" +
                           (f" ... and {len(self.failed_repos) - 3} more" if len(self.failed_repos) > 3 else ""))
                     self.total_success = False
                 else:
-                    print("   🎉 All repositories processed successfully!")
+                    print("   All repositories processed successfully!")
 
             if self.gists_flag:
                 total_gists = len(self.github_client.gists)
                 successful_gists = total_gists - len(self.failed_gists)
 
-                print(f"\n📝 GISTS:")
+                print(f"\nGISTS:")
                 print(f"   Total: {total_gists}")
-                print(f"   ✅ Successful: {successful_gists}")
-                print(f"   ❌ Failed: {len(self.failed_gists)}")
+                print(f"   [ok] Successful: {successful_gists}")
+                print(f"   [err] Failed: {len(self.failed_gists)}")
 
                 if self.failed_gists:
                     print(f"   Failed items: {', '.join(list(self.failed_gists.keys())[:3])}" +
                           (f" ... and {len(self.failed_gists) - 3} more" if len(self.failed_gists) > 3 else ""))
                     self.total_success = False
                 else:
-                    print("   🎉 All gists processed successfully!")
+                    print("   All gists processed successfully!")
 
-            print(f"\n💾 BACKUP LOCATION:")
+            print(f"\nBACKUP LOCATION:")
             print(f"   {self.backup_path}")
 
             if self.total_success:
-                print(f"\n🎉 SUCCESS: All backup operations completed successfully!")
+                print(f"\n[ok] SUCCESS: All backup operations completed successfully!")
             else:
-                print(f"\n⚠️  WARNING: Some items failed - check logs for details")
+                print(f"\n[!]  WARNING: Some items failed - check logs for details")
 
             print("=" * 60)
         except Exception as e:

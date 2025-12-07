@@ -1,8 +1,8 @@
-# GitHub Repositories Backup Tools <sup>v1.1.1</sup>
+# GitHub Repositories Backup Tools <sup>v1.2.0</sup>
 
 ---
 
-> A professional, modular solution for automatically cloning and backing up GitHub repositories and GIST files.
+A professional, modular solution for automatically cloning and backing up GitHub repositories and GIST files.
 
 ---
 
@@ -234,91 +234,91 @@ THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. Use at your own r
 Parsing command line arguments...
 
 📋 Parsed arguments:
-   Backup: 📦 Repositories, 📝 Gists, 🗄 Archive
+   Backup: Repositories, Gists, Archive
    Timeout: 30s
-   Verbose: ❌ Disabled
-   Power: ❌ No action
+   Verbose: [x] Disabled
+   Power: [x] No action
 
 ⚙️ Configuration Setup: 
 Checking and setting up configuration directories
 
-📁 Configuration directory: /home/user_name/.config/github_repos_backup_tools/github_token.json
+Configuration directory: /home/user_name/.config/github_repos_backup_tools/github_token.json
 
-🔑 Getting GitHub token: 
+Getting GitHub token: 
 
-✅ Token obtained successfully
+Token obtained successfully
 
-🔑 GitHub Authentication: 
+GitHub Authentication: 
 Authenticating with GitHub...
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.5s)
-✅ Authenticated as: user_name
+   Attempt 1/3 (timeout: 30s)... [ok] (0.5s)
+[ok] Authenticated as: user_name
 
-📁 Directory Setup: 
+Directory Setup: 
 Creating backup directory structure...
-📁 Main backup directory: /home/user_name/user_name_github_backup
-   ✅ repositories/
-   ✅ gists/
+Main backup directory: /home/user_name/user_name_github_backup
+   [ok] repositories/
+   [ok] gists/
 
-🔄 Repositories Operations: 
+Repositories Operations: 
 Fetching and cloning/updating repositories...
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (2.0s)
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (2.1s)
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (2.1s)
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.5s)
-✅ Found 100 repositories
+   Attempt 1/3 (timeout: 30s)... [ok] (2.0s)
+   Attempt 1/3 (timeout: 30s)... [ok] (2.1s)
+   Attempt 1/3 (timeout: 30s)... [ok] (2.1s)
+   Attempt 1/3 (timeout: 30s)... [ok] (0.5s)
+[ok] Found 100 repositories
 
-📦 Processing 100 repositories...
+Processing 100 repositories...
 [##########] 100.00% | 100/100 | Failed: 0 | Processing: user_name/repo_name_...
-✅ Cloning/updating repositories completed successfully!
+[ok] Cloning/updating repositories completed successfully!
 
 
-🔄 Gists Operations: 
+Gists Operations: 
 Fetching and cloning/updating gists...
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.5s)
-   🔄 Attempt 1/3 (timeout: 30s)... ✅ (0.4s)
-✅ Found 1 gists
+   Attempt 1/3 (timeout: 30s)... [ok] (0.5s)
+   Attempt 1/3 (timeout: 30s)... [ok] (0.4s)
+[ok] Found 1 gists
 
-📝 Processing 1 gists...
+Processing 1 gists...
 [##########] 100.00% | 1/1 | Failed: 0 | Processing: a2e7733c3ba32963b7c0985e...
-✅ Cloning/updating gists completed successfully!
+[ok] Cloning/updating gists completed successfully!
 
 
-✅ Verification: 
+[ok] Verification: 
 Verifying that all repositories and gists are properly cloned/updated...
-📊 Repositories verification:
+Repositories verification:
    Total: 100
    Valid: 100
    Missing: 0
-📊 Gists verification:
+Gists verification:
    Total: 1
    Valid: 1
    Missing: 0
-✅ All items verified successfully!
+[ok] All items verified successfully!
 
-📊 Report: 
+Report: 
 Generating backup report...
 
-📦 REPOSITORIES:
+REPOSITORIES:
    Total: 100
-   ✅ Successful: 100
-   ❌ Failed: 0
-   🎉 All repositories processed successfully!
+   [ok] Successful: 100
+   [x] Failed: 0
+   All repositories processed successfully!
 
-📝 GISTS:
+GISTS:
    Total: 1
-   ✅ Successful: 1
-   ❌ Failed: 0
-   🎉 All gists processed successfully!
+   [ok] Successful: 1
+   [x] Failed: 0
+   All gists processed successfully!
 
-💾 BACKUP LOCATION:
+BACKUP LOCATION:
    /home/user_name/user_name_github_backup
 
-🎉 SUCCESS: All backup operations completed successfully!
+[ok] SUCCESS: All backup operations completed successfully!
 ============================================================
 
-🗄️ Archive Creation: 
+Archive Creation: 
 Creating backup archive...
-✅ Archive created successfully: /home/user_name/github_user_name_2025-11-19_18_11_46.zip
+[ok] Archive created successfully: /home/user_name/github_user_name_2025-11-19_18_11_46.zip
 --------------------------------------------------------------------------------
 ---------------------- https://github.com/smartlegionlab/ ----------------------
 --------------------- Copyright © 2025, Alexander Suvorov ----------------------

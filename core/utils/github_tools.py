@@ -37,7 +37,7 @@ class GitHubDataMaster:
 
         while retries < max_retries:
             current_retry = retries + 1
-            print(f"   🔄 Attempt {current_retry}/{max_retries} (timeout: {timeout}s)...", end=' ')
+            print(f"   [~] Attempt {current_retry}/{max_retries} (timeout: {timeout}s)...", end=' ')
 
             req = urllib.request.Request(url, headers=self.headers)
             try:
@@ -46,29 +46,29 @@ class GitHubDataMaster:
                     request_time = time.time() - start_time
 
                     if response.status == 200:
-                        print(f"✅ ({request_time:.1f}s)")
+                        print(f"[ok] ({request_time:.1f}s)")
                         data = json.loads(response.read().decode('utf-8'))
                         return data
                     else:
-                        print(f"❌ HTTP {response.status}")
+                        print(f"[err] HTTP {response.status}")
                         raise Exception(f"Error: {response.status}")
 
             except urllib.error.HTTPError as e:
-                print(f"❌ HTTP {e.code}")
+                print(f"[err] HTTP {e.code}")
                 if e.code == 401:
                     return None
             except urllib.error.URLError as e:
-                print(f"❌ Network: {e.reason}")
+                print(f"[err] Network: {e.reason}")
             except Exception as e:
-                print(f"❌ Error: {str(e)}")
+                print(f"[err] Error: {str(e)}")
 
             retries += 1
             if retries < max_retries:
                 wait_time = 2 ** retries
-                print(f"   ⏳ Waiting {wait_time}s before retry...")
+                print(f"   Waiting {wait_time}s before retry...")
                 time.sleep(wait_time)
 
-        print(f"❌ Max retries ({max_retries}) reached")
+        print(f"[err] Max retries ({max_retries}) reached")
         return None
 
     def fetch_user_data(self, max_retries: int = 3, timeout: int = 30) -> bool:
