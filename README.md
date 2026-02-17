@@ -16,6 +16,16 @@ A professional, modular solution for automatically cloning and backing up GitHub
 
 ---
 
+**WARNING!!!** - Вы можете использовать улучшенные версии данного приложения. Новая экоситема для клонирования, обновления, скачивания репозиториев:
+
+**Smart Repository Manager**:
+
+- [CORE](https://github.com/smartlegionlab/smart-repository-manager-core) - A Python library for managing Git repositories with intelligent synchronization, SSH configuration validation, and GitHub integration.
+- [CLI](https://github.com/smartlegionlab/smart-repository-manager-cli) - A powerful desktop application for managing GitHub repositories with intelligent synchronization, SSH configuration, and comprehensive visual management tools.
+- [GUI](https://github.com/smartlegionlab/smart-repository-manager-gui) - A comprehensive command-line tool for managing GitHub repositories with advanced synchronization, SSH configuration management, and intelligent local repository management.
+
+---
+
 ## 🚀 Key Features
 
 - **Complete Backup** - Clone both public and private repositories/gists
