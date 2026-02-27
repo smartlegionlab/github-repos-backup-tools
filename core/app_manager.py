@@ -10,6 +10,7 @@ from core.backup.archive_manager import ArchiveManager
 from core.backup.repo_manager import RepoManager
 from core.config.args_manager import ArgumentsManager
 from core.config.settings import Config, ProjectPaths
+from core.github.api_client import GitHubAPIClient
 from core.github.auth_manager import GitHubAuthManager
 from core.models import BackupStats
 from core.reports.report_generator import ReportGenerator
@@ -92,9 +93,38 @@ class AppManager:
             users = ProjectPaths.get_all_users()
             if users:
                 Config.delete_token(users[0])
-                print(f"✅ Token deleted for user: {users[0]}")
+                print(f"✅ Old token deleted for user: {users[0]}")
+
+                print("\n🔐 GitHub Authentication")
+                token = GitHubAuthManager.get_token_from_user()
+                if token:
+                    client = GitHubAPIClient(token, timeout=args.timeout)
+                    if client.verify_token():
+                        username = client.login
+                        ProjectPaths.ensure_user_dir(username)
+                        if Config.save_token(username, token):
+                            print(f"✅ New token saved for user: {username}")
+                        else:
+                            print("❌ Failed to save new token")
+                    else:
+                        print("❌ New token is invalid")
+                else:
+                    print("❌ Token update cancelled")
             else:
                 print("⚠️ No saved token found")
+                print("\n🔐 GitHub Authentication")
+                token = GitHubAuthManager.get_token_from_user()
+                if token:
+                    client = GitHubAPIClient(token, timeout=args.timeout)
+                    if client.verify_token():
+                        username = client.login
+                        ProjectPaths.ensure_user_dir(username)
+                        if Config.save_token(username, token):
+                            print(f"✅ Token saved for user: {username}")
+                        else:
+                            print("❌ Failed to save token")
+                    else:
+                        print("❌ Token is invalid")
             self._show_footer()
             return
 
