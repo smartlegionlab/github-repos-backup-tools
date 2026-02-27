@@ -104,6 +104,97 @@ python app.py -r --shutdown
 ## 📊 Example Output
 
 ```
+********************************************************************************
+----------------------- GitHub Repositories Backup Tools -----------------------
+
+
+🔧 Arguments Parsing:
+Parsing command line arguments...
+
+Parsed arguments:
+   Backup: Archive
+   Timeout: 30s
+   All branches: ✅ Yes (always)
+   Power: ❌ No action
+
+📁 Application Setup
+   Application directory: /home/user/github_backup_repos_tools
+
+🌐 Network Check
+✅ Internet connection OK
+✅ GitHub accessible
+
+🔐 GitHub Authentication
+   Found existing user: smartlegionlab
+   Attempt 1/3... ✅ (0.5s)
+✅ Authenticated as: smartlegionlab
+
+🔍 Scanning repositories...
+
+📦 Fetching all repositories...
+   Fetching user repositories...
+   Attempt 1/3... ✅ (1.2s)
+   Attempt 1/3... ✅ (1.1s)
+   Attempt 1/3... ✅ (0.9s)
+   Attempt 1/3... ✅ (0.7s)
+   Attempt 1/3... ✅ (0.5s)
+   ✅ Found 52 user repositories
+
+   Fetching organization repositories...
+   Attempt 1/3... ✅ (0.5s)
+
+✅ Total unique repositories: 52
+
+✅ Found 52 repositories total
+
+📁 Backup location: /home/user/github_backup_repos_tools/smartlegionlab
+   Repositories: /home/user/github_backup_repos_tools/smartlegionlab/repositories
+
+📂 Processing 52 repositories...
+   Location: /home/user/github_backup_repos_tools/smartlegionlab
+   Repos: /home/user/github_backup_repos_tools/smartlegionlab/repositories
+
+[██████████████████████████████]  100.0% | 52/52/0 | SKIP  | smartlegionlab/github-repos-backup-tools
+✅ Repository processing complete!
+
+============================================================
+📋 BACKUP REPORT
+============================================================
+👤 User: smartlegionlab
+📁 Application directory: /home/user/github_backup_repos_tools
+   └─ smartlegionlab/
+       ├─ repositories/
+       └─ config.json
+
+⏱️  Started: 2026-02-27 17:19:01
+⏱️  Finished: 2026-02-27 17:24:20
+⏱️  Duration: 0:05:18
+
+📊 REPOSITORY STATISTICS:
+   Total:           52 repositories
+   ✅ Cloned:          0 repositories (new)
+   🔄 Updated:         0 repositories
+   ⏭️  Skipped:     52 repositories (up to date)
+   ❌ Failed:          0 repositories
+   📚 Branches:      52 total
+
+📈 Success rate: 100.0%
+
+============================================================
+✅ ALL REPOSITORIES BACKED UP SUCCESSFULLY!
+============================================================
+
+📦 Archive Creation
+   Creating archive: smartlegionlab_github_backup_2026-02-27_17-24-20.zip
+   From: /home/user/github_backup_repos_tools/smartlegionlab
+   To: /home/user/github_backup_repos_tools/smartlegionlab_github_backup_2026-02-27_17-24-20.zip
+   ✅ Archive created successfully!
+   📊 Size: 15.19 MB
+   📁 Location: /home/user/github_backup_repos_tools/smartlegionlab_github_backup_2026-02-27_17-24-20.zip
+------------------------------------------------------------------------------------
+------------------------ https://github.com/smartlegionlab/ ------------------------
+----------------------- Copyright © 2025, Alexander Suvorov ------------------------
+************************************************************************************
 
 ```
 
