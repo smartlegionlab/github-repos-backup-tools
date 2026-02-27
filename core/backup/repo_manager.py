@@ -373,9 +373,9 @@ class RepoManager:
                             self.stats.failed += 1
                             self.stats.failed_repos.append(f"{repo.full_name} (update)")
                     else:
-                        op_type = "SKIP "
+                        op_type = "SYNC "
                         progress.update(i, self.stats.total_repos, self.stats.failed, f"{op_type} | {repo.full_name}")
-                        self.stats.skipped += 1
+                        self.stats.synced += 1
                         success = True
 
             if success and repo_path.exists():

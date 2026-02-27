@@ -39,7 +39,7 @@ class ReportGenerator:
         print(f"   {'Total:':15} {self.stats.total_repos:4} repositories")
         print(f"   {'✅ Cloned:':15} {self.stats.cloned:4} repositories (new)")
         print(f"   {'🔄 Updated:':15} {self.stats.updated:4} repositories")
-        print(f"   {'⏭️  Skipped:':15} {self.stats.skipped:4} repositories (up to date)")
+        print(f"   {'🔄 Synced:':15} {self.stats.synced:4} repositories (branches only)")
         print(f"   {'❌ Failed:':15} {self.stats.failed:4} repositories")
         print(f"   {'📚 Branches:':15} {self.stats.total_branches:4} total")
 
@@ -71,7 +71,7 @@ class ReportGenerator:
                 "total": self.stats.total_repos,
                 "cloned": self.stats.cloned,
                 "updated": self.stats.updated,
-                "skipped": self.stats.skipped,
+                "synced": self.stats.synced,
                 "failed": self.stats.failed,
                 "total_branches": self.stats.total_branches,
                 "failed_repos": self.stats.failed_repos,

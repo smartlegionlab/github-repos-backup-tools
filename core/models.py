@@ -13,6 +13,7 @@ class BackupStats:
     total_repos: int = 0
     cloned: int = 0
     updated: int = 0
+    synced: int = 0
     skipped: int = 0
     failed: int = 0
     total_branches: int = 0

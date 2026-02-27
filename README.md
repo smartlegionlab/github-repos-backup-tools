@@ -23,7 +23,7 @@ A professional solution for automatic cloning and backup of all your GitHub repo
 - **No SSH Required** - uses only HTTPS with token authentication
 - **Token Persistence** - token is saved after first use and reused on subsequent runs
 - **Progress with Error Counter** - visual progress bar showing error count
-- **Detailed Report** - statistics on cloned, updated, skipped, and failed repositories
+- **Detailed Report** - statistics on cloned, updated, synced, and failed repositories
 - **Archiving** - creates timestamped ZIP archive in the application folder
 - **Power Management** - shutdown/reboot after completion (optional)
 
@@ -174,7 +174,7 @@ Parsed arguments:
    Total:           52 repositories
    ✅ Cloned:          0 repositories (new)
    🔄 Updated:         0 repositories
-   ⏭️  Skipped:     52 repositories (up to date)
+   ⏭️ Synced:       52 repositories (up to date)
    ❌ Failed:          0 repositories
    📚 Branches:      52 total
 
@@ -247,7 +247,7 @@ A: `shutdown -c` (Linux/macOS) or `shutdown /a` (Windows)
 - ✅ **New folder structure** - `~/github_backup_repos_tools/[username]/repositories/`
 - ✅ **All branches** - clones ALL branches, not just default
 - ✅ **No SSH required** - uses only HTTPS with token authentication
-- ✅ **Detailed report** - shows cloned/updated/skipped/failed breakdown
+- ✅ **Detailed report** - shows cloned/updated/synced/failed breakdown
 - ✅ **Smart updates** - compares local commits with GitHub pushed_at (5 min threshold)
 - ✅ **Double-check verification** - compares commit hashes when dates differ
 - ✅ **Health checks** - verifies repository integrity after each operation
