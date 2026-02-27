@@ -198,6 +198,8 @@ class RepoManager:
             if fetch_result.returncode != 0:
                 return False
 
+            self._prune_local_branches(repo_path)
+
             return self._create_local_branches_from_remote(repo_path)
 
         except Exception:
@@ -386,3 +388,62 @@ class RepoManager:
         self.stats.end_time = datetime.now()
 
         return self.stats
+
+    def _prune_local_branches(self, repo_path: Path) -> bool:
+        try:
+            current_branch_result = subprocess.run(
+                ['git', '-C', str(repo_path), 'rev-parse', '--abbrev-ref', 'HEAD'],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            current_branch = current_branch_result.stdout.strip() if current_branch_result.returncode == 0 else 'master'
+
+            remote_result = subprocess.run(
+                ['git', '-C', str(repo_path), 'ls-remote', '--heads', 'origin'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if remote_result.returncode != 0:
+                return False
+
+            remote_branches = set()
+            for line in remote_result.stdout.strip().split('\n'):
+                if line:
+                    parts = line.split()
+                    if len(parts) > 1:
+                        branch_ref = parts[1]
+                        branch_name = branch_ref.replace('refs/heads/', '')
+                        remote_branches.add(branch_name)
+
+            local_result = subprocess.run(
+                ['git', '-C', str(repo_path), 'branch', '--format=%(refname:short)'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if local_result.returncode != 0:
+                return False
+
+            local_branches = set(local_result.stdout.strip().split('\n'))
+
+            to_delete = local_branches - remote_branches
+
+            if current_branch in to_delete:
+                to_delete.remove(current_branch)
+
+            for branch in to_delete:
+                if branch and branch != 'master' and not branch.startswith('*'):
+                    subprocess.run(
+                        ['git', '-C', str(repo_path), 'branch', '-D', branch],
+                        capture_output=True,
+                        timeout=10
+                    )
+
+            return True
+
+        except Exception:
+            return False
