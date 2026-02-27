@@ -1,4 +1,4 @@
-# GitHub Repositories Backup Tools <sup>v1.4.1</sup>
+# GitHub Repositories Backup Tools <sup>v1.5.0</sup>
 
 A professional solution for automatic cloning and backup of all your GitHub repositories.
 
@@ -26,28 +26,30 @@ A professional solution for automatic cloning and backup of all your GitHub repo
 
 ## 🚀 Features
 
-- **Full Backup** - clones ALL repositories (public and private) from your account
-- **All Branches** - automatically saves ALL branches, not just default
-- **Smart Update** - updates only repositories with changes in the last 5 minutes
+- **Full Backup** - clones ALL repositories (public and private) from your account and organizations
+- **All Branches** - automatically creates local branches for ALL remote branches
+- **Smart Update** - compares local commits with GitHub, updates only when needed
 - **Automatic Retries** - up to 5 attempts with exponential backoff on failures
 - **Health Check** - automatic integrity verification of each repository
 - **No SSH Required** - uses only HTTPS with token authentication
 - **Token Persistence** - token is saved after first use and reused on subsequent runs
-- **Progress with Error Counter** - visual progress bar showing error count
-- **Detailed Report** - statistics on cloned, updated, synced, and failed repositories
+- **Progress with Error Counter** - visual progress bar showing current/total/errors
+- **Detailed Report** - statistics on cloned/updated/synced/skipped/failed repositories
+- **Branch Pruning** - automatically removes local branches deleted on remote
 - **Archiving** - creates timestamped ZIP archive in the application folder
 - **Power Management** - shutdown/reboot after completion (optional)
+- **Fast Mode** - `--no-branches` flag to skip branch synchronization for speed
 
-## 📁 Project Structure
+## 📁 Structure
 
 ```
 ~/github_backup_repos_tools/              # Main application folder
-└── user/                                 # Your GitHub username
-    ├── repositories/                     # All cloned repositories
-    │   ├── repo1/                        # Full copy with ALL branches
+└── username/                              # Your GitHub username
+    ├── repositories/                       # All cloned repositories
+    │   ├── repo1/                          # Full copy with ALL branches
     │   ├── repo2/
     │   └── ...
-    └── config.json                       # Token file (automatically created)
+    └── config.json                          # Token file (automatically created)
 ```
 
 ## 🖥 System Requirements
@@ -97,14 +99,14 @@ On first run, the program will ask for your GitHub token and save it.
 
 ### Usage Examples
 ```bash
-# Basic backup of all repositories
+# Full backup with all branches (default)
 python app.py -r
 
-# Backup without creating archive
-python app.py -r --no-archive
-
-# Fast mode - only default branch (no branch sync)
+# Fast mode - only default branch, no branch sync
 python app.py -r --no-branches
+
+# Backup without archive
+python app.py -r --no-archive
 
 # With increased timeout
 python app.py -r --timeout 60
@@ -112,7 +114,7 @@ python app.py -r --timeout 60
 # Update token
 python app.py -t
 
-# Backup with shutdown after completion
+# Backup with shutdown
 python app.py -r --shutdown
 ```
 
@@ -122,14 +124,11 @@ python app.py -r --shutdown
 ********************************************************************************
 ----------------------- GitHub Repositories Backup Tools -----------------------
 
-
 🔧 Arguments Parsing:
-Parsing command line arguments...
-
 Parsed arguments:
-   Backup: Archive
+   Backup: Repositories, Archive
    Timeout: 30s
-   All branches: ✅ Yes (always)
+   Branches: ✅ Enabled
    Power: ❌ No action
 
 📁 Application Setup
@@ -141,35 +140,19 @@ Parsed arguments:
 
 🔐 GitHub Authentication
    Found existing user: smartlegionlab
-   Attempt 1/3... ✅ (0.5s)
 ✅ Authenticated as: smartlegionlab
 
 🔍 Scanning repositories...
-
 📦 Fetching all repositories...
-   Fetching user repositories...
-   Attempt 1/3... ✅ (1.2s)
-   Attempt 1/3... ✅ (1.1s)
-   Attempt 1/3... ✅ (0.9s)
-   Attempt 1/3... ✅ (0.7s)
-   Attempt 1/3... ✅ (0.5s)
-   ✅ Found 52 user repositories
-
-   Fetching organization repositories...
-   Attempt 1/3... ✅ (0.5s)
-
-✅ Total unique repositories: 52
-
-✅ Found 52 repositories total
+   ✅ Found 52 repositories
 
 📁 Backup location: /home/user/github_backup_repos_tools/smartlegionlab
    Repositories: /home/user/github_backup_repos_tools/smartlegionlab/repositories
 
 📂 Processing 52 repositories...
-   Location: /home/user/github_backup_repos_tools/smartlegionlab
-   Repos: /home/user/github_backup_repos_tools/smartlegionlab/repositories
+   Branch sync: ✅ Enabled
 
-[██████████████████████████████]  100.0% | 52/52/0 | SKIP  | smartlegionlab/github-repos-backup-tools
+[██████████████████████████████] 100.0% | 52/52/0 | SYNC | smartlegionlab/repo
 ✅ Repository processing complete!
 
 ============================================================
@@ -189,9 +172,9 @@ Parsed arguments:
    Total:           52 repositories
    ✅ Cloned:          0 repositories (new)
    🔄 Updated:         0 repositories
-   ⏭️ Synced:       52 repositories (up to date)
+   🔄 Synced:         52 repositories (branches only)
    ❌ Failed:          0 repositories
-   📚 Branches:      52 total
+   📚 Branches:      245 total
 
 📈 Success rate: 100.0%
 
@@ -200,32 +183,37 @@ Parsed arguments:
 ============================================================
 
 📦 Archive Creation
-   Creating archive: smartlegionlab_github_backup_2026-02-27_17-24-20.zip
-   From: /home/user/github_backup_repos_tools/smartlegionlab
-   To: /home/user/github_backup_repos_tools/smartlegionlab_github_backup_2026-02-27_17-24-20.zip
-   ✅ Archive created successfully!
+   ✅ Archive created: smartlegionlab_github_backup_2026-02-27_17-24-20.zip
    📊 Size: 15.19 MB
-   📁 Location: /home/user/github_backup_repos_tools/smartlegionlab_github_backup_2026-02-27_17-24-20.zip
 ------------------------------------------------------------------------------------
 ------------------------ https://github.com/smartlegionlab/ ------------------------
 ----------------------- Copyright © 2026, Alexander Suvorov ------------------------
 ************************************************************************************
-
 ```
 
 ## 🔄 How It Works
 
-1. **Network Check** - verifies internet and GitHub API availability
-2. **Authentication** - uses saved token or requests a new one
-3. **Scanning** - gets list of all repositories (yours + from organizations)
-4. **Clone/Update**:
-   - If repository doesn't exist - clones with all branches
-   - If exists - checks last commit date
-   - Updates only if changes are older than 5 minutes
-5. **Health Check** - verifies repository integrity after each operation
-6. **Retries** - up to 5 attempts with exponential backoff on failures
-7. **Report** - shows detailed statistics
-8. **Archiving** - creates ZIP archive (if not disabled)
+### Operation Modes
+
+| Mode | Command | CLONE | PULL | SYNC | SKIP |
+|------|---------|-------|------|------|------|
+| **Default** | `python app.py -r` | Full + branches | Code + branches | Branches only | - |
+| **Fast** | `python app.py -r --no-branches` | Full + branches | Code only | - | Nothing |
+
+### Update Logic
+
+1. **Quick check**: compare local commit date with GitHub pushed_at
+2. **If difference > 5 minutes**: compare actual commit hashes via `ls-remote`
+3. **If hashes differ**: perform `git pull`
+4. **After pull**: verify repository health with `git rev-parse HEAD`
+5. **If corrupted**: automatic re-clone with retries
+
+### Branch Synchronization (Default Mode)
+
+- **CLONE**: creates local branches for all remote branches
+- **PULL**: fetches all branches + updates code + creates new branches
+- **SYNC**: fetches all branches + creates new branches + prunes deleted ones
+- **Pruning**: automatically removes local branches deleted on remote
 
 ## 🔒 Security
 
@@ -255,37 +243,34 @@ A: In `~/github_backup_repos_tools/[username]/config.json`
 **Q: How to cancel scheduled shutdown?**  
 A: `shutdown -c` (Linux/macOS) or `shutdown /a` (Windows)
 
+**Q: Fast mode still slow?**  
+A: Fast mode skips branch sync, but still does health checks and hash verification when needed
+
 ---
 
-## 📌 What's New in v1.4.1
+## 🚀 What's New in v1.5.0
 
 - ✅ **New folder structure** - `~/github_backup_repos_tools/[username]/repositories/`
-- ✅ **All branches** - clones ALL branches, not just default
+- ✅ **All branches** - creates local branches for ALL remote branches
+- ✅ **Branch pruning** - automatically removes local branches deleted on remote
 - ✅ **No SSH required** - uses only HTTPS with token authentication
-- ✅ **Detailed report** - shows cloned/updated/synced/failed breakdown
-- ✅ **Smart updates** - compares local commits with GitHub pushed_at (5 min threshold)
-- ✅ **Double-check verification** - compares commit hashes when dates differ
+- ✅ **Smart update** - two-stage verification (date + hash) before pull
 - ✅ **Health checks** - verifies repository integrity after each operation
 - ✅ **Automatic recovery** - re-clones corrupted repositories
 - ✅ **Exponential backoff** - up to 5 retries with increasing delays
-- ✅ **Clean folder names** - repositories stored without username prefix (just `repo-name`)
+- ✅ **Fast mode** - new `--no-branches` flag for speed
 
-## 🚀 What's New in v1.4.1
+### Two Operation Modes
 
-- **New `--no-branches` flag** - disable branch synchronization for faster backups
-- **Two modes:**
-  - Default: full backup with ALL branches (SYNC)
-  - Fast mode: `--no-branches` - only default branch (SKIP)
-- **Performance**: fast mode is ~50% quicker for large repositories
+| Mode | Command | Behavior | Use Case |
+|------|---------|----------|----------|
+| **Default** | `python app.py -r` | Full backup with ALL branches | Complete backup |
+| **Fast** | `python app.py -r --no-branches` | Code only, no branch sync | Quick daily sync |
 
-### Update Logic Improvements
-```
-1. Fast check: compare local commit date with GitHub pushed_at
-2. If difference > 5 minutes: compare actual commit hashes
-3. Only then perform git pull (saves time and bandwidth)
-4. After pull: verify repository health
-5. If corrupted: automatic re-clone
-```
+### Performance Comparison
+- **Default mode**: ~3-5 seconds per repository (with branches)
+- **Fast mode**: ~1-2 seconds per repository (code only)
+- **SKIP** (no changes): virtually instant
 
 ---
 
