@@ -1,4 +1,4 @@
-# GitHub Repositories Backup Tools <sup>v1.3.0</sup>
+# GitHub Repositories Backup Tools <sup>v1.3.1</sup>
 
 A professional solution for automatic cloning and backup of all your GitHub repositories.
 
@@ -149,12 +149,29 @@ A: In `~/github_backup_repos_tools/[username]/config.json`
 **Q: How to cancel scheduled shutdown?**  
 A: `shutdown -c` (Linux/macOS) or `shutdown /a` (Windows)
 
-## 📌 What's New in v1.3.0
+---
 
-- ✅ New folder structure `~/github_backup_repos_tools/[username]/repositories/`
-- ✅ Clones ALL branches, not just default
-- ✅ Removed SSH dependency (HTTPS only)
-- ✅ Detailed report with cloned/updated/skipped/failed breakdown
+## 📌 What's New in v1.3.1
+
+- ✅ **New folder structure** - `~/github_backup_repos_tools/[username]/repositories/`
+- ✅ **All branches** - clones ALL branches, not just default
+- ✅ **No SSH required** - uses only HTTPS with token authentication
+- ✅ **Detailed report** - shows cloned/updated/skipped/failed breakdown
+- ✅ **Smart updates** - compares local commits with GitHub pushed_at (5 min threshold)
+- ✅ **Double-check verification** - compares commit hashes when dates differ
+- ✅ **Health checks** - verifies repository integrity after each operation
+- ✅ **Automatic recovery** - re-clones corrupted repositories
+- ✅ **Exponential backoff** - up to 5 retries with increasing delays
+- ✅ **Clean folder names** - repositories stored without username prefix (just `repo-name`)
+
+### Update Logic Improvements
+```
+1. Fast check: compare local commit date with GitHub pushed_at
+2. If difference > 5 minutes: compare actual commit hashes
+3. Only then perform git pull (saves time and bandwidth)
+4. After pull: verify repository health
+5. If corrupted: automatic re-clone
+```
 
 ---
 
