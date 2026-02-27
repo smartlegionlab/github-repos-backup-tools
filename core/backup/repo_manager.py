@@ -36,8 +36,7 @@ class RepoManager:
         print(f"   Repositories: {self.repos_dir}")
 
     def _get_local_path(self, repo: RepoInfo) -> Path:
-        safe_name = repo.full_name.replace('/', '_')
-        return self.repos_dir / safe_name
+        return self.repos_dir / repo.name
 
     def _get_local_commit_date(self, repo_path: Path) -> Optional[datetime]:
         try:
@@ -122,7 +121,7 @@ class RepoManager:
 
             return local_hash != remote_hash
 
-        except Exception as e:
+        except Exception:
             return True
 
     def _verify_repo_health(self, repo_path: Path) -> bool:
@@ -137,6 +136,69 @@ class RepoManager:
             )
 
             return result.returncode == 0
+
+        except Exception:
+            return False
+
+    def _create_local_branches_from_remote(self, repo_path: Path) -> bool:
+        try:
+            current_branch_result = subprocess.run(
+                ['git', '-C', str(repo_path), 'rev-parse', '--abbrev-ref', 'HEAD'],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            current_branch = current_branch_result.stdout.strip() if current_branch_result.returncode == 0 else 'master'
+
+            branch_result = subprocess.run(
+                ['git', '-C', str(repo_path), 'branch', '-r'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if branch_result.returncode != 0:
+                return False
+
+            remote_branches = branch_result.stdout.strip().split('\n')
+
+            for remote_branch in remote_branches:
+                remote_branch = remote_branch.strip()
+                if remote_branch and not remote_branch.startswith('origin/HEAD'):
+                    local_branch = remote_branch.replace('origin/', '', 1)
+
+                    check_branch = subprocess.run(
+                        ['git', '-C', str(repo_path), 'rev-parse', '--verify', local_branch],
+                        capture_output=True,
+                        timeout=5
+                    )
+
+                    if check_branch.returncode != 0:
+                        checkout_cmd = ['git', '-C', str(repo_path), 'checkout', '-b', local_branch, remote_branch]
+                        subprocess.run(checkout_cmd, timeout=30, capture_output=True)
+
+            checkout_back = ['git', '-C', str(repo_path), 'checkout', current_branch]
+            subprocess.run(checkout_back, timeout=10, capture_output=True)
+
+            return True
+
+        except Exception:
+            return False
+
+    def _fetch_all_branches(self, repo_path: Path) -> bool:
+        try:
+            git_dir = repo_path / '.git'
+            config_cmd = ['git', '--git-dir', str(git_dir), 'config', 'remote.origin.fetch',
+                          '+refs/heads/*:refs/remotes/origin/*']
+            subprocess.run(config_cmd, timeout=10, capture_output=True)
+
+            fetch_cmd = ['git', '-C', str(repo_path), 'fetch', '--all', '--prune', '--tags']
+            fetch_result = subprocess.run(fetch_cmd, timeout=self.timeout, capture_output=True)
+
+            if fetch_result.returncode != 0:
+                return False
+
+            return self._create_local_branches_from_remote(repo_path)
 
         except Exception:
             return False
@@ -164,8 +226,22 @@ class RepoManager:
                 time.sleep(wait_time)
                 return self._clone_with_retry(repo_path, repo, retry_count + 1)
 
-            fetch_cmd = ['git', '-C', str(repo_path), 'fetch', '--all', '--tags']
+            git_dir = repo_path / '.git'
+            config_cmd = ['git', '--git-dir', str(git_dir), 'config', 'remote.origin.fetch',
+                          '+refs/heads/*:refs/remotes/origin/*']
+            subprocess.run(config_cmd, timeout=10, capture_output=True)
+
+            pull_config_cmd = ['git', '--git-dir', str(git_dir), 'config', 'pull.rebase', 'false']
+            subprocess.run(pull_config_cmd, timeout=10, capture_output=True)
+
+            fetch_cmd = ['git', '-C', str(repo_path), 'fetch', '--all', '--tags', '--prune']
             subprocess.run(fetch_cmd, timeout=self.timeout, capture_output=True)
+
+            self._create_local_branches_from_remote(repo_path)
+
+            default_branch = repo.default_branch or 'master'
+            checkout_default = ['git', '-C', str(repo_path), 'checkout', default_branch]
+            subprocess.run(checkout_default, timeout=10, capture_output=True)
 
             if not self._verify_repo_health(repo_path):
                 shutil.rmtree(repo_path, ignore_errors=True)
@@ -191,10 +267,7 @@ class RepoManager:
             return False
 
         try:
-            fetch_cmd = ['git', '-C', str(repo_path), 'fetch', '--all', '--prune', '--tags']
-            fetch_result = subprocess.run(fetch_cmd, timeout=self.timeout, capture_output=True)
-
-            if fetch_result.returncode != 0:
+            if not self._fetch_all_branches(repo_path):
                 wait_time = 2 ** retry_count
                 time.sleep(wait_time)
                 return self._update_with_retry(repo_path, repo, retry_count + 1)
@@ -233,7 +306,7 @@ class RepoManager:
     def _count_branches(self, repo_path: Path) -> int:
         try:
             result = subprocess.run(
-                ['git', '-C', str(repo_path), 'branch', '-a'],
+                ['git', '-C', str(repo_path), 'branch'],
                 capture_output=True,
                 text=True,
                 timeout=10
@@ -259,23 +332,11 @@ class RepoManager:
             repo_path = self._get_local_path(repo)
 
             exists = repo_path.exists() and (repo_path / '.git').exists()
-            needs_update = self._needs_update(repo_path, repo) if exists else True
 
             if not exists:
                 op_type = "CLONE"
-            elif needs_update:
-                op_type = "PULL "
-            else:
-                op_type = "SKIP "
+                progress.update(i, self.stats.total_repos, self.stats.failed, f"{op_type} | {repo.full_name}")
 
-            progress.update(
-                i,
-                self.stats.total_repos,
-                self.stats.failed,
-                f"{op_type} | {repo.full_name}"
-            )
-
-            if not exists:
                 success = self._clone_with_retry(repo_path, repo)
                 if success:
                     self.stats.cloned += 1
@@ -283,16 +344,39 @@ class RepoManager:
                     self.stats.failed += 1
                     self.stats.failed_repos.append(f"{repo.full_name} (clone)")
 
-            elif needs_update:
-                success = self._update_with_retry(repo_path, repo)
-                if success:
-                    self.stats.updated += 1
-                else:
-                    self.stats.failed += 1
-                    self.stats.failed_repos.append(f"{repo.full_name} (update)")
             else:
-                success = True
-                self.stats.skipped += 1
+                fetch_success = self._fetch_all_branches(repo_path)
+
+                if not fetch_success:
+                    shutil.rmtree(repo_path, ignore_errors=True)
+                    op_type = "CLONE (recover)"
+                    progress.update(i, self.stats.total_repos, self.stats.failed, f"{op_type} | {repo.full_name}")
+
+                    success = self._clone_with_retry(repo_path, repo)
+                    if success:
+                        self.stats.cloned += 1
+                    else:
+                        self.stats.failed += 1
+                        self.stats.failed_repos.append(f"{repo.full_name} (clone-recover)")
+
+                else:
+                    needs_update = self._needs_update(repo_path, repo)
+
+                    if needs_update:
+                        op_type = "PULL "
+                        progress.update(i, self.stats.total_repos, self.stats.failed, f"{op_type} | {repo.full_name}")
+
+                        success = self._update_with_retry(repo_path, repo)
+                        if success:
+                            self.stats.updated += 1
+                        else:
+                            self.stats.failed += 1
+                            self.stats.failed_repos.append(f"{repo.full_name} (update)")
+                    else:
+                        op_type = "SKIP "
+                        progress.update(i, self.stats.total_repos, self.stats.failed, f"{op_type} | {repo.full_name}")
+                        self.stats.skipped += 1
+                        success = True
 
             if success and repo_path.exists():
                 self.stats.total_branches += self._count_branches(repo_path)
