@@ -1,1 +1,1 @@
-requests
+# No external dependencies - uses only Python standard library

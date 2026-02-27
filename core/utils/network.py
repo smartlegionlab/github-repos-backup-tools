@@ -4,7 +4,8 @@
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
 import socket
-import requests
+import urllib.request
+import urllib.error
 from typing import Tuple
 
 
@@ -22,14 +23,18 @@ class NetworkChecker:
     @staticmethod
     def check_github(timeout: int = 5) -> Tuple[bool, str]:
         try:
-            response = requests.get("https://api.github.com", timeout=timeout)
-            if response.status_code == 200:
-                return True, "GitHub API is accessible"
-            else:
-                return False, f"GitHub returned status {response.status_code}"
-        except requests.exceptions.Timeout:
+            req = urllib.request.Request("https://api.github.com")
+            req.add_header('User-Agent', 'GitHub-Backup-Tools/2.0')
+
+            with urllib.request.urlopen(req, timeout=timeout) as response:
+                if response.status == 200:
+                    return True, "GitHub API is accessible"
+                else:
+                    return False, f"GitHub returned status {response.status}"
+
+        except urllib.error.URLError as e:
+            return False, f"Cannot connect to GitHub: {e.reason}"
+        except TimeoutError:
             return False, "Connection timeout"
-        except requests.exceptions.ConnectionError:
-            return False, "Cannot connect to GitHub"
         except Exception as e:
             return False, str(e)

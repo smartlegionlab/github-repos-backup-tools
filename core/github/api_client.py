@@ -3,11 +3,12 @@
 # Copyright (©) 2026, Alexander Suvorov. All rights reserved.
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
-import requests
+import urllib.request
+import urllib.error
+import json
 import time
 from typing import Dict, List, Optional
-
-from core.models import RepoInfo
+from ..models import RepoInfo
 
 
 class GitHubAPIClient:
@@ -17,15 +18,16 @@ class GitHubAPIClient:
         self.timeout = timeout
         self.max_retries = max_retries
         self.base_url = 'https://api.github.com'
-        self.session = requests.Session()
-        self.session.headers.update({
-            'Authorization': f'token {token}',
-            'Accept': 'application/vnd.github.v3+json',
-            'User-Agent': 'GitHub-Backup-Tools/2.0'
-        })
         self.login = None
         self._rate_limit_remaining = 5000
         self._rate_limit_reset = 0
+
+    def _create_request(self, url: str):
+        req = urllib.request.Request(url)
+        req.add_header('Authorization', f'token {self.token}')
+        req.add_header('Accept', 'application/vnd.github.v3+json')
+        req.add_header('User-Agent', 'GitHub-Backup-Tools/2.0')
+        return req
 
     def _check_rate_limit(self):
         if self._rate_limit_remaining < 100:
@@ -41,29 +43,42 @@ class GitHubAPIClient:
 
                 print(f"   Attempt {attempt + 1}/{self.max_retries}...", end=' ')
 
-                response = self.session.get(url, timeout=self.timeout)
+                req = self._create_request(url)
 
-                self._rate_limit_remaining = int(response.headers.get('X-RateLimit-Remaining', 5000))
-                self._rate_limit_reset = int(response.headers.get('X-RateLimit-Reset', 0))
+                start_time = time.time()
+                with urllib.request.urlopen(req, timeout=self.timeout) as response:
+                    request_time = time.time() - start_time
 
-                if response.status_code == 200:
-                    print("✅")
-                    return response.json()
-                elif response.status_code == 403 and 'rate limit' in response.text.lower():
+                    self._rate_limit_remaining = int(response.headers.get('X-RateLimit-Remaining', 5000))
+                    self._rate_limit_reset = int(response.headers.get('X-RateLimit-Reset', 0))
+
+                    if response.status == 200:
+                        print(f"✅ ({request_time:.1f}s)")
+                        data = json.loads(response.read().decode('utf-8'))
+                        return data
+                    else:
+                        print(f"❌ HTTP {response.status}")
+
+            except urllib.error.HTTPError as e:
+                if e.code == 403 and 'rate limit' in str(e).lower():
                     print("⚠️ Rate limit hit")
-                    reset_time = int(response.headers.get('X-RateLimit-Reset', 0))
+                    reset_time = int(e.headers.get('X-RateLimit-Reset', 0))
                     wait_time = max(0, reset_time - time.time())
                     if wait_time > 0:
                         print(f"   Waiting {wait_time / 60:.1f} minutes...")
                         time.sleep(wait_time + 5)
+                elif e.code == 401:
+                    print("❌ Unauthorized - invalid token")
+                    return None
                 else:
-                    print(f"❌ HTTP {response.status_code}")
-                    if response.status_code == 401:
-                        return None
-            except requests.exceptions.Timeout:
+                    print(f"❌ HTTP {e.code}")
+
+            except urllib.error.URLError as e:
+                print(f"🔌 Connection error: {e.reason}")
+
+            except TimeoutError:
                 print(f"⏱️ Timeout")
-            except requests.exceptions.ConnectionError:
-                print(f"🔌 Connection error")
+
             except Exception as e:
                 print(f"❌ Error: {e}")
 
