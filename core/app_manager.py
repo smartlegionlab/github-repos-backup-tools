@@ -161,7 +161,7 @@ class AppManager:
                 max_retries=5
             )
 
-            self.stats = repo_manager.process_repositories(repos)
+            self.stats = repo_manager.process_repositories(repos, skip_branches=args.no_branches)
 
         report_gen = ReportGenerator(
             github_client=self.github_client,

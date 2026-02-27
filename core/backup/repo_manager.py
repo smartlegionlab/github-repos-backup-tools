@@ -320,13 +320,14 @@ class RepoManager:
         except Exception:
             return 0
 
-    def process_repositories(self, repos: List[RepoInfo]) -> BackupStats:
+    def process_repositories(self, repos: List[RepoInfo], skip_branches: bool = False) -> BackupStats:
         self.stats.start_time = datetime.now()
         self.stats.total_repos = len(repos)
 
         print(f"\n📂 Processing {len(repos)} repositories...")
         print(f"   Location: {self.user_dir}")
-        print(f"   Repos: {self.repos_dir}\n")
+        print(f"   Repos: {self.repos_dir}")
+        print(f"   Branch sync: {'❌ Disabled' if skip_branches else '✅ Enabled'}\n")
 
         progress = ProgressBar()
 
@@ -347,38 +348,75 @@ class RepoManager:
                     self.stats.failed_repos.append(f"{repo.full_name} (clone)")
 
             else:
-                fetch_success = self._fetch_all_branches(repo_path)
+                if skip_branches:
+                    fetch_success = self._fetch_only(repo_path)
 
-                if not fetch_success:
-                    shutil.rmtree(repo_path, ignore_errors=True)
-                    op_type = "CLONE (recover)"
-                    progress.update(i, self.stats.total_repos, self.stats.failed, f"{op_type} | {repo.full_name}")
-
-                    success = self._clone_with_retry(repo_path, repo)
-                    if success:
-                        self.stats.cloned += 1
-                    else:
-                        self.stats.failed += 1
-                        self.stats.failed_repos.append(f"{repo.full_name} (clone-recover)")
-
-                else:
-                    needs_update = self._needs_update(repo_path, repo)
-
-                    if needs_update:
-                        op_type = "PULL "
+                    if not fetch_success:
+                        shutil.rmtree(repo_path, ignore_errors=True)
+                        op_type = "CLONE (recover)"
                         progress.update(i, self.stats.total_repos, self.stats.failed, f"{op_type} | {repo.full_name}")
 
-                        success = self._update_with_retry(repo_path, repo)
+                        success = self._clone_with_retry(repo_path, repo)
                         if success:
-                            self.stats.updated += 1
+                            self.stats.cloned += 1
                         else:
                             self.stats.failed += 1
-                            self.stats.failed_repos.append(f"{repo.full_name} (update)")
+                            self.stats.failed_repos.append(f"{repo.full_name} (clone-recover)")
                     else:
-                        op_type = "SYNC "
+                        needs_update = self._needs_update(repo_path, repo)
+
+                        if needs_update:
+                            op_type = "PULL "
+                            progress.update(i, self.stats.total_repos, self.stats.failed,
+                                            f"{op_type} | {repo.full_name}")
+
+                            success = self._update_with_retry_fast(repo_path, repo)
+                            if success:
+                                self.stats.updated += 1
+                            else:
+                                self.stats.failed += 1
+                                self.stats.failed_repos.append(f"{repo.full_name} (update)")
+                        else:
+                            op_type = "SKIP "
+                            progress.update(i, self.stats.total_repos, self.stats.failed,
+                                            f"{op_type} | {repo.full_name}")
+                            self.stats.skipped += 1
+                            success = True
+                else:
+                    fetch_success = self._fetch_all_branches(repo_path)
+
+                    if not fetch_success:
+                        shutil.rmtree(repo_path, ignore_errors=True)
+                        op_type = "CLONE (recover)"
                         progress.update(i, self.stats.total_repos, self.stats.failed, f"{op_type} | {repo.full_name}")
-                        self.stats.synced += 1
-                        success = True
+
+                        success = self._clone_with_retry(repo_path, repo)
+                        if success:
+                            self.stats.cloned += 1
+                        else:
+                            self.stats.failed += 1
+                            self.stats.failed_repos.append(f"{repo.full_name} (clone-recover)")
+
+                    else:
+                        needs_update = self._needs_update(repo_path, repo)
+
+                        if needs_update:
+                            op_type = "PULL "
+                            progress.update(i, self.stats.total_repos, self.stats.failed,
+                                            f"{op_type} | {repo.full_name}")
+
+                            success = self._update_with_retry(repo_path, repo)
+                            if success:
+                                self.stats.updated += 1
+                            else:
+                                self.stats.failed += 1
+                                self.stats.failed_repos.append(f"{repo.full_name} (update)")
+                        else:
+                            op_type = "SYNC "
+                            progress.update(i, self.stats.total_repos, self.stats.failed,
+                                            f"{op_type} | {repo.full_name}")
+                            self.stats.synced += 1
+                            success = True
 
             if success and repo_path.exists():
                 self.stats.total_branches += self._count_branches(repo_path)
@@ -388,6 +426,55 @@ class RepoManager:
         self.stats.end_time = datetime.now()
 
         return self.stats
+
+    def _fetch_only(self, repo_path: Path) -> bool:
+        try:
+            fetch_cmd = ['git', '-C', str(repo_path), 'fetch', '--all', '--prune', '--tags']
+            result = subprocess.run(fetch_cmd, timeout=self.timeout, capture_output=True)
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def _update_with_retry_fast(self, repo_path: Path, repo: RepoInfo, retry_count: int = 0) -> bool:
+        if retry_count >= self.max_retries:
+            return False
+
+        try:
+            if not self._fetch_only(repo_path):
+                wait_time = 2 ** retry_count
+                time.sleep(wait_time)
+                return self._update_with_retry_fast(repo_path, repo, retry_count + 1)
+
+            branch_result = subprocess.run(
+                ['git', '-C', str(repo_path), 'rev-parse', '--abbrev-ref', 'HEAD'],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            current_branch = branch_result.stdout.strip() if branch_result.returncode == 0 else 'master'
+
+            pull_cmd = ['git', '-C', str(repo_path), 'pull', 'origin', current_branch]
+            pull_result = subprocess.run(pull_cmd, timeout=self.timeout, capture_output=True)
+
+            if pull_result.returncode != 0:
+                wait_time = 2 ** retry_count
+                time.sleep(wait_time)
+                return self._update_with_retry_fast(repo_path, repo, retry_count + 1)
+
+            if not self._verify_repo_health(repo_path):
+                shutil.rmtree(repo_path, ignore_errors=True)
+                return self._clone_with_retry(repo_path, repo, 0)
+
+            return True
+
+        except subprocess.TimeoutExpired:
+            wait_time = 2 ** retry_count
+            time.sleep(wait_time)
+            return self._update_with_retry_fast(repo_path, repo, retry_count + 1)
+
+        except Exception:
+            return False
 
     def _prune_local_branches(self, repo_path: Path) -> bool:
         try:

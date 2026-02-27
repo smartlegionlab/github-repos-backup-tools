@@ -1,4 +1,4 @@
-# GitHub Repositories Backup Tools <sup>v1.4.0</sup>
+# GitHub Repositories Backup Tools <sup>v1.4.1</sup>
 
 A professional solution for automatic cloning and backup of all your GitHub repositories.
 
@@ -87,6 +87,7 @@ On first run, the program will ask for your GitHub token and save it.
 | `-t` | Update token (delete old and request new) |
 | `--no-archive` | Disable archive creation (archive is created by default) |
 | `--timeout N` | Timeout for Git operations in seconds (default: 30) |
+| `--no-branches` | Disable branch synchronization (faster, only default branch) |
 
 ### Power Management
 | Command | Description |
@@ -101,6 +102,9 @@ python app.py -r
 
 # Backup without creating archive
 python app.py -r --no-archive
+
+# Fast mode - only default branch (no branch sync)
+python app.py -r --no-branches
 
 # With increased timeout
 python app.py -r --timeout 60
@@ -253,7 +257,7 @@ A: `shutdown -c` (Linux/macOS) or `shutdown /a` (Windows)
 
 ---
 
-## 📌 What's New in v1.4.0
+## 📌 What's New in v1.4.1
 
 - ✅ **New folder structure** - `~/github_backup_repos_tools/[username]/repositories/`
 - ✅ **All branches** - clones ALL branches, not just default
@@ -265,6 +269,14 @@ A: `shutdown -c` (Linux/macOS) or `shutdown /a` (Windows)
 - ✅ **Automatic recovery** - re-clones corrupted repositories
 - ✅ **Exponential backoff** - up to 5 retries with increasing delays
 - ✅ **Clean folder names** - repositories stored without username prefix (just `repo-name`)
+
+## 🚀 What's New in v1.4.1
+
+- **New `--no-branches` flag** - disable branch synchronization for faster backups
+- **Two modes:**
+  - Default: full backup with ALL branches (SYNC)
+  - Fast mode: `--no-branches` - only default branch (SKIP)
+- **Performance**: fast mode is ~50% quicker for large repositories
 
 ### Update Logic Improvements
 ```

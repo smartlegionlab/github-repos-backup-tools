@@ -52,6 +52,11 @@ class ArgumentsManager:
             default=30,
             help="Timeout for git operations in seconds (default: 30)"
         )
+        parser.add_argument(
+            "--no-branches",
+            action="store_true",
+            help="Disable branch synchronization (faster, but only default branch)"
+        )
 
         power_group = parser.add_mutually_exclusive_group()
         power_group.add_argument(
@@ -81,7 +86,7 @@ class ArgumentsManager:
         print("\nParsed arguments:")
         print(f"   Backup: {', '.join(backup_items) if backup_items else 'None'}")
         print(f"   Timeout: {args.timeout}s")
-        print(f"   All branches: ✅ Yes (always)")
+        print(f"   Branches: {'✅ Yes' if not args.no_branches else '❌ No (fast mode)'}")
 
         if args.shutdown:
             print("   Shutdown: ✅ After completion")
