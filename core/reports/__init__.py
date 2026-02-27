@@ -3,4 +3,4 @@
 # Copyright (©) 2026, Alexander Suvorov. All rights reserved.
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
-"""Utility package"""
+"""Reports package"""
