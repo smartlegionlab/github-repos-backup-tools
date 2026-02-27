@@ -48,7 +48,7 @@ class ProjectPaths:
 class Config:
     APP_NAME = 'GitHub Repositories Backup Tools'
     APP_URL = 'https://github.com/smartlegionlab/'
-    APP_COPYRIGHT = 'Copyright © 2025, Alexander Suvorov'
+    APP_COPYRIGHT = 'Copyright © 2026, Alexander Suvorov'
     APP_HELP_URL = 'https://github.com/smartlegionlab/github-repos-backup-tools/'
 
     @classmethod

@@ -1,4 +1,4 @@
-# GitHub Repositories Backup Tools <sup>v1.3.1</sup>
+# GitHub Repositories Backup Tools <sup>v1.4.0</sup>
 
 A professional solution for automatic cloning and backup of all your GitHub repositories.
 
@@ -204,7 +204,7 @@ Parsed arguments:
    📁 Location: /home/user/github_backup_repos_tools/smartlegionlab_github_backup_2026-02-27_17-24-20.zip
 ------------------------------------------------------------------------------------
 ------------------------ https://github.com/smartlegionlab/ ------------------------
------------------------ Copyright © 2025, Alexander Suvorov ------------------------
+----------------------- Copyright © 2026, Alexander Suvorov ------------------------
 ************************************************************************************
 
 ```
@@ -253,7 +253,7 @@ A: `shutdown -c` (Linux/macOS) or `shutdown /a` (Windows)
 
 ---
 
-## 📌 What's New in v1.3.1
+## 📌 What's New in v1.4.0
 
 - ✅ **New folder structure** - `~/github_backup_repos_tools/[username]/repositories/`
 - ✅ **All branches** - clones ALL branches, not just default
