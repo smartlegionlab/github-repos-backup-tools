@@ -4,3 +4,5 @@
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
 """Core package for GitHub Backup Tools"""
+__version__ = '1.3.0'
+
