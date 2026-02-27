@@ -3,6 +3,4 @@
 # Copyright (©) 2026, Alexander Suvorov. All rights reserved.
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
-"""Core package for GitHub Backup Tools"""
-__version__ = '1.3.1'
-
+"""Configuration package"""
