@@ -41,6 +41,16 @@ class RepoManager:
 
     def _get_local_commit_date(self, repo_path: Path) -> Optional[datetime]:
         try:
+            check_result = subprocess.run(
+                ['git', '-C', str(repo_path), 'rev-parse', '--verify', 'HEAD'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if check_result.returncode != 0:
+                return None
+
             result = subprocess.run(
                 ['git', '-C', str(repo_path), 'log', '-1', '--format=%cI'],
                 capture_output=True,
@@ -49,35 +59,70 @@ class RepoManager:
             )
 
             if result.returncode == 0 and result.stdout.strip():
-                date_str = result.stdout.strip()
-                return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                date_line = result.stdout.strip().split('\n')[0]
+                if date_line:
+                    date_str_clean = date_line.replace(' +', '+').replace(' -', '-')
+                    return datetime.fromisoformat(date_str_clean)
+            return None
+
         except Exception:
-            pass
-        return None
+            return None
 
     def _needs_update(self, repo_path: Path, repo: RepoInfo) -> bool:
-        if not repo_path.exists():
-            return True
-
-        git_dir = repo_path / '.git'
-        if not git_dir.exists():
-            return True
-
         try:
+            if not repo_path.exists() or not (repo_path / '.git').exists():
+                return True
+
             local_date = self._get_local_commit_date(repo_path)
             if not local_date:
                 return True
 
             github_date = datetime.fromisoformat(repo.pushed_at.replace('Z', '+00:00'))
 
-            if local_date.tzinfo:
-                local_date = local_date.astimezone(timezone.utc).replace(tzinfo=None)
-            github_date = github_date.replace(tzinfo=None)
+            if local_date.tzinfo is None:
+                local_date_utc = local_date.replace(tzinfo=timezone.utc)
+            else:
+                local_date_utc = local_date.astimezone(timezone.utc)
 
-            time_diff = (github_date - local_date).total_seconds()
-            return time_diff > 300
+            github_date_utc = github_date.replace(tzinfo=timezone.utc)
 
-        except Exception:
+            time_diff = github_date_utc - local_date_utc
+            diff_seconds = time_diff.total_seconds()
+
+            if diff_seconds <= 300:
+                return False
+
+            remote_result = subprocess.run(
+                ['git', '-C', str(repo_path), 'ls-remote', 'origin', 'HEAD'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if remote_result.returncode != 0:
+                return True
+
+            remote_data = remote_result.stdout.strip()
+            if not remote_data:
+                return True
+
+            remote_hash = remote_data.split()[0]
+
+            local_hash_result = subprocess.run(
+                ['git', '-C', str(repo_path), 'rev-parse', 'HEAD'],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            if local_hash_result.returncode != 0:
+                return True
+
+            local_hash = local_hash_result.stdout.strip()
+
+            return local_hash != remote_hash
+
+        except Exception as e:
             return True
 
     def _verify_repo_health(self, repo_path: Path) -> bool:
@@ -154,7 +199,16 @@ class RepoManager:
                 time.sleep(wait_time)
                 return self._update_with_retry(repo_path, repo, retry_count + 1)
 
-            pull_cmd = ['git', '-C', str(repo_path), 'pull', '--all']
+            branch_result = subprocess.run(
+                ['git', '-C', str(repo_path), 'rev-parse', '--abbrev-ref', 'HEAD'],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            current_branch = branch_result.stdout.strip() if branch_result.returncode == 0 else 'master'
+
+            pull_cmd = ['git', '-C', str(repo_path), 'pull', 'origin', current_branch]
             pull_result = subprocess.run(pull_cmd, timeout=self.timeout, capture_output=True)
 
             if pull_result.returncode != 0:
@@ -204,7 +258,7 @@ class RepoManager:
         for i, repo in enumerate(repos, 1):
             repo_path = self._get_local_path(repo)
 
-            exists = repo_path.exists()
+            exists = repo_path.exists() and (repo_path / '.git').exists()
             needs_update = self._needs_update(repo_path, repo) if exists else True
 
             if not exists:
