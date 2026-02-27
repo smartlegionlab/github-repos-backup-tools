@@ -20,12 +20,10 @@ class RepoManager:
 
     def __init__(self, github_client: GitHubAPIClient,
                  timeout: int = 30,
-                 all_branches: bool = True,
                  max_retries: int = 5):
         self.github_client = github_client
         self.username = github_client.login
         self.timeout = timeout
-        self.all_branches = all_branches
         self.max_retries = max_retries
         self.stats = BackupStats()
 
@@ -121,9 +119,8 @@ class RepoManager:
                 time.sleep(wait_time)
                 return self._clone_with_retry(repo_path, repo, retry_count + 1)
 
-            if self.all_branches:
-                fetch_cmd = ['git', '-C', str(repo_path), 'fetch', '--all', '--tags']
-                subprocess.run(fetch_cmd, timeout=self.timeout, capture_output=True)
+            fetch_cmd = ['git', '-C', str(repo_path), 'fetch', '--all', '--tags']
+            subprocess.run(fetch_cmd, timeout=self.timeout, capture_output=True)
 
             if not self._verify_repo_health(repo_path):
                 shutil.rmtree(repo_path, ignore_errors=True)

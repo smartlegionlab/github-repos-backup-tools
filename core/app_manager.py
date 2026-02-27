@@ -158,7 +158,6 @@ class AppManager:
             repo_manager = RepoManager(
                 github_client=self.github_client,
                 timeout=args.timeout,
-                all_branches=args.all_branches,
                 max_retries=5
             )
 

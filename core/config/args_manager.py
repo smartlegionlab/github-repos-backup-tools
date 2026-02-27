@@ -24,7 +24,7 @@ class ArgumentsManager:
     @staticmethod
     def _create_parser() -> argparse.ArgumentParser:
         parser = argparse.ArgumentParser(
-            description="GitHub Repositories Backup Tools - Clone all your repositories with all branches"
+            description="GitHub Repositories Backup Tools - Clone all your repositories with ALL branches"
         )
 
         parser.add_argument(
@@ -51,12 +51,6 @@ class ArgumentsManager:
             type=int,
             default=30,
             help="Timeout for git operations in seconds (default: 30)"
-        )
-        parser.add_argument(
-            "--all-branches",
-            action="store_true",
-            default=True,
-            help="Clone all branches (default: True)"
         )
 
         power_group = parser.add_mutually_exclusive_group()
@@ -87,7 +81,7 @@ class ArgumentsManager:
         print("\nParsed arguments:")
         print(f"   Backup: {', '.join(backup_items) if backup_items else 'None'}")
         print(f"   Timeout: {args.timeout}s")
-        print(f"   All branches: {'✅ Yes' if args.all_branches else '❌ No'}")
+        print(f"   All branches: ✅ Yes (always)")
 
         if args.shutdown:
             print("   Shutdown: ✅ After completion")
