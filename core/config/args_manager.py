@@ -53,11 +53,6 @@ class ArgumentsManager:
             help="Timeout for git operations in seconds (default: 30)"
         )
         parser.add_argument(
-            "--verbose",
-            action="store_true",
-            help="Enable verbose output"
-        )
-        parser.add_argument(
             "--all-branches",
             action="store_true",
             default=True,
@@ -92,7 +87,6 @@ class ArgumentsManager:
         print("\nParsed arguments:")
         print(f"   Backup: {', '.join(backup_items) if backup_items else 'None'}")
         print(f"   Timeout: {args.timeout}s")
-        print(f"   Verbose: {'✅ Enabled' if args.verbose else '❌ Disabled'}")
         print(f"   All branches: {'✅ Yes' if args.all_branches else '❌ No'}")
 
         if args.shutdown:

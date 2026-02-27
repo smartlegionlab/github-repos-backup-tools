@@ -19,12 +19,12 @@ from core.utils.progress import ProgressBar
 class RepoManager:
 
     def __init__(self, github_client: GitHubAPIClient,
-                 timeout: int = 30, verbose: bool = False,
-                 all_branches: bool = True, max_retries: int = 5):
+                 timeout: int = 30,
+                 all_branches: bool = True,
+                 max_retries: int = 5):
         self.github_client = github_client
         self.username = github_client.login
         self.timeout = timeout
-        self.verbose = verbose
         self.all_branches = all_branches
         self.max_retries = max_retries
         self.stats = BackupStats()
@@ -79,9 +79,7 @@ class RepoManager:
             time_diff = (github_date - local_date).total_seconds()
             return time_diff > 300
 
-        except Exception as e:
-            if self.verbose:
-                print(f"   ⚠️ Update check error: {e}")
+        except Exception:
             return True
 
     def _verify_repo_health(self, repo_path: Path) -> bool:
@@ -107,9 +105,6 @@ class RepoManager:
         try:
             auth_url = repo.clone_url.replace('https://', f'https://oauth2:{self.github_client.token}@')
 
-            if self.verbose:
-                print(f"   Cloning {repo.full_name} (attempt {retry_count + 1}/{self.max_retries})...")
-
             cmd = ['git', 'clone', auth_url, str(repo_path)]
             result = subprocess.run(
                 cmd,
@@ -119,55 +114,34 @@ class RepoManager:
             )
 
             if result.returncode != 0:
-                if self.verbose:
-                    print(f"   ❌ Clone failed: {result.stderr[:200]}")
-
                 if repo_path.exists():
                     shutil.rmtree(repo_path, ignore_errors=True)
 
                 wait_time = 2 ** retry_count
-                if self.verbose:
-                    print(f"   Retrying in {wait_time}s...")
                 time.sleep(wait_time)
-
                 return self._clone_with_retry(repo_path, repo, retry_count + 1)
 
             if self.all_branches:
-                if self.verbose:
-                    print("   Fetching all branches...")
-
                 fetch_cmd = ['git', '-C', str(repo_path), 'fetch', '--all', '--tags']
                 subprocess.run(fetch_cmd, timeout=self.timeout, capture_output=True)
 
             if not self._verify_repo_health(repo_path):
-                if self.verbose:
-                    print(f"   ❌ Health check failed after clone")
                 shutil.rmtree(repo_path, ignore_errors=True)
                 return self._clone_with_retry(repo_path, repo, retry_count + 1)
 
             return True
 
         except subprocess.TimeoutExpired:
-            if self.verbose:
-                print(f"   ❌ Clone timeout")
-
             if repo_path.exists():
                 shutil.rmtree(repo_path, ignore_errors=True)
 
             wait_time = 2 ** retry_count
-            if self.verbose:
-                print(f"   Retrying in {wait_time}s...")
             time.sleep(wait_time)
-
             return self._clone_with_retry(repo_path, repo, retry_count + 1)
 
-        except Exception as e:
-            if self.verbose:
-                print(f"   ❌ Error: {e}")
-
+        except Exception:
             if repo_path.exists():
                 shutil.rmtree(repo_path, ignore_errors=True)
-
             return False
 
     def _update_with_retry(self, repo_path: Path, repo: RepoInfo, retry_count: int = 0) -> bool:
@@ -175,16 +149,10 @@ class RepoManager:
             return False
 
         try:
-            if self.verbose:
-                print(f"   Updating {repo.full_name} (attempt {retry_count + 1}/{self.max_retries})...")
-
             fetch_cmd = ['git', '-C', str(repo_path), 'fetch', '--all', '--prune', '--tags']
             fetch_result = subprocess.run(fetch_cmd, timeout=self.timeout, capture_output=True)
 
             if fetch_result.returncode != 0:
-                if self.verbose:
-                    print(f"   ❌ Fetch failed")
-
                 wait_time = 2 ** retry_count
                 time.sleep(wait_time)
                 return self._update_with_retry(repo_path, repo, retry_count + 1)
@@ -193,36 +161,22 @@ class RepoManager:
             pull_result = subprocess.run(pull_cmd, timeout=self.timeout, capture_output=True)
 
             if pull_result.returncode != 0:
-                if self.verbose:
-                    print(f"   ❌ Pull failed")
-
                 wait_time = 2 ** retry_count
                 time.sleep(wait_time)
                 return self._update_with_retry(repo_path, repo, retry_count + 1)
 
             if not self._verify_repo_health(repo_path):
-                if self.verbose:
-                    print(f"   ❌ Health check failed after update")
-
-                if self.verbose:
-                    print(f"   Repository corrupted, re-cloning...")
                 shutil.rmtree(repo_path, ignore_errors=True)
                 return self._clone_with_retry(repo_path, repo, 0)
 
             return True
 
         except subprocess.TimeoutExpired:
-            if self.verbose:
-                print(f"   ❌ Update timeout")
-
             wait_time = 2 ** retry_count
             time.sleep(wait_time)
             return self._update_with_retry(repo_path, repo, retry_count + 1)
 
-        except Exception as e:
-            if self.verbose:
-                print(f"   ❌ Error: {e}")
-
+        except Exception:
             return False
 
     def _count_branches(self, repo_path: Path) -> int:
