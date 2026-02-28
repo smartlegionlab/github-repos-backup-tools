@@ -165,13 +165,14 @@ class AppManager:
                 max_retries=5
             )
 
-            self.stats = repo_manager.process_repositories(repos, skip_branches=args.no_branches)
+            self.stats = repo_manager.process_repositories(repos, all_branches=args.all_branches)
 
         report_gen = ReportGenerator(
             github_client=self.github_client,
             stats=self.stats
         )
-        report_gen.generate()
+        report_data = report_gen.generate()
+        report_gen.save(report_data)
 
         if args.archive and backup_repos:
             archive_manager = ArchiveManager(

@@ -3,7 +3,9 @@
 # Copyright (©) 2026, Alexander Suvorov. All rights reserved.
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
+import json
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, Any
 
 from core.config.settings import ProjectPaths
@@ -40,6 +42,7 @@ class ReportGenerator:
         print(f"   {'✅ Cloned:':15} {self.stats.cloned:4} repositories (new)")
         print(f"   {'🔄 Updated:':15} {self.stats.updated:4} repositories")
         print(f"   {'🔄 Synced:':15} {self.stats.synced:4} repositories (branches only)")
+        print(f"   {'⏭️ Skipped:':15} {self.stats.skipped:4} repositories (no changes)")
         print(f"   {'❌ Failed:':15} {self.stats.failed:4} repositories")
         print(f"   {'📚 Branches:':15} {self.stats.total_branches:4} total")
 
@@ -72,6 +75,7 @@ class ReportGenerator:
                 "cloned": self.stats.cloned,
                 "updated": self.stats.updated,
                 "synced": self.stats.synced,
+                "skipped": self.stats.skipped,
                 "failed": self.stats.failed,
                 "total_branches": self.stats.total_branches,
                 "failed_repos": self.stats.failed_repos,
@@ -81,3 +85,13 @@ class ReportGenerator:
                 if self.stats.total_repos > 0 else 0
             }
         }
+
+    def save(self, report_data: Dict[str, Any]) -> Path:
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        report_path = self.user_dir / f"backup_report_{timestamp}.json"
+
+        with open(report_path, 'w', encoding='utf-8') as f:
+            json.dump(report_data, f, indent=2, ensure_ascii=False)
+
+        print(f"📄 JSON report saved: {report_path}")
+        return report_path

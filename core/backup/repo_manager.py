@@ -423,14 +423,17 @@ class RepoManager:
         except Exception:
             return False
 
-    def process_repositories(self, repos: List[RepoInfo], skip_branches: bool = False) -> BackupStats:
+    def process_repositories(self, repos: List[RepoInfo], all_branches: bool = False) -> BackupStats:
         self.stats.start_time = datetime.now()
         self.stats.total_repos = len(repos)
 
         print(f"\n📂 Processing {len(repos)} repositories...")
         print(f"   Location: {self.user_dir}")
         print(f"   Repos: {self.repos_dir}")
-        print(f"   Branch sync: {'❌ Disabled' if skip_branches else '✅ Enabled'}\n")
+        if all_branches:
+            print(f"   Mode: 🔄 Full branch sync (slower, clones ALL branches)\n")
+        else:
+            print(f"   Mode: ⚡ Fast mode (default branch only)\n")
 
         progress = ProgressBar()
 
@@ -451,7 +454,7 @@ class RepoManager:
                     self.stats.failed_repos.append(f"{repo.full_name} (clone)")
 
             else:
-                if skip_branches:
+                if not all_branches:
                     needs_update = self._needs_update(repo_path, repo)
 
                     if needs_update:

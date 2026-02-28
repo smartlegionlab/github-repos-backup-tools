@@ -1,4 +1,4 @@
-# GitHub Repositories Backup Tools <sup>1.5.1</sup>
+# GitHub Repositories Backup Tools <sup>v1.5.2</sup>
 
 A professional solution for automatic cloning and backup of all your GitHub repositories.
 
@@ -27,7 +27,6 @@ A professional solution for automatic cloning and backup of all your GitHub repo
 ## 🚀 Features
 
 - **Full Backup** - clones ALL repositories (public and private) from your account and organizations
-- **All Branches** - automatically creates local branches for ALL remote branches
 - **Smart Update** - compares local commits with GitHub, updates only when needed
 - **Automatic Retries** - up to 5 attempts with exponential backoff on failures
 - **Health Check** - automatic integrity verification of each repository
@@ -35,10 +34,11 @@ A professional solution for automatic cloning and backup of all your GitHub repo
 - **Token Persistence** - token is saved after first use and reused on subsequent runs
 - **Progress with Error Counter** - visual progress bar showing current/total/errors
 - **Detailed Report** - statistics on cloned/updated/synced/skipped/failed repositories
-- **Branch Pruning** - automatically removes local branches deleted on remote
+- **Branch Pruning** - automatically removes local branches deleted on remote (Full Mode)
 - **Archiving** - creates timestamped ZIP archive in the application folder
 - **Power Management** - shutdown/reboot after completion (optional)
-- **Fast Mode** - `--no-branches` flag to skip branch synchronization for speed
+- **Fast Mode (Default)** - clones only default branch for maximum speed
+- **Full Mode** - `--all-branches` flag to enable synchronization of ALL branches
 
 ## 📁 Structure
 
@@ -46,7 +46,7 @@ A professional solution for automatic cloning and backup of all your GitHub repo
 ~/github_backup_repos_tools/              # Main application folder
 └── username/                              # Your GitHub username
     ├── repositories/                       # All cloned repositories
-    │   ├── repo1/                          # Full copy with ALL branches
+    │   ├── repo1/                          # Repository copy
     │   ├── repo2/
     │   └── ...
     └── config.json                          # Token file (automatically created)
@@ -89,7 +89,7 @@ On first run, the program will ask for your GitHub token and save it.
 | `-t` | Update token (delete old and request new) |
 | `--no-archive` | Disable archive creation (archive is created by default) |
 | `--timeout N` | Timeout for Git operations in seconds (default: 30) |
-| `--no-branches` | Disable branch synchronization (faster, only default branch) |
+| `--all-branches` | Enable full branch synchronization (slower, clones ALL branches) |
 
 ### Power Management
 | Command | Description |
@@ -99,11 +99,11 @@ On first run, the program will ask for your GitHub token and save it.
 
 ### Usage Examples
 ```bash
-# Full backup with all branches (default)
+# Fast mode - only default branch (DEFAULT)
 python app.py -r
 
-# Fast mode - only default branch, no branch sync
-python app.py -r --no-branches
+# Full mode - ALL branches (slower but complete)
+python app.py -r --all-branches
 
 # Backup without archive
 python app.py -r --no-archive
@@ -128,7 +128,7 @@ python app.py -r --shutdown
 Parsed arguments:
    Backup: Repositories, Archive
    Timeout: 30s
-   Branches: ✅ Enabled
+   Branches: ⚡ Fast mode (default branch only)
    Power: ❌ No action
 
 📁 Application Setup
@@ -150,9 +150,9 @@ Parsed arguments:
    Repositories: /home/user/github_backup_repos_tools/smartlegionlab/repositories
 
 📂 Processing 52 repositories...
-   Branch sync: ✅ Enabled
+   Mode: ⚡ Fast mode (default branch only)
 
-[██████████████████████████████] 100.0% | 52/52/0 | SYNC | smartlegionlab/repo
+[██████████████████████████████] 100.0% | 52/52/0 | SKIP | smartlegionlab/repo
 ✅ Repository processing complete!
 
 ============================================================
@@ -172,9 +172,10 @@ Parsed arguments:
    Total:           52 repositories
    ✅ Cloned:          0 repositories (new)
    🔄 Updated:         0 repositories
-   🔄 Synced:         52 repositories (branches only)
+   🔄 Synced:          0 repositories (branches only)
+   ⏭️ Skipped:        52 repositories (no changes)
    ❌ Failed:          0 repositories
-   📚 Branches:      245 total
+   📚 Branches:       52 total
 
 📈 Success rate: 100.0%
 
@@ -195,10 +196,31 @@ Parsed arguments:
 
 ### Operation Modes
 
-| Mode | Command | CLONE | PULL | SYNC | SKIP |
-|------|---------|-------|------|------|------|
-| **Default** | `python app.py -r` | Full + branches | Code + branches | Branches only | - |
-| **Fast** | `python app.py -r --no-branches` | Full + branches | Code only | - | Nothing |
+#### Fast Mode (Default) - `python app.py -r`
+| Action | When it happens | What it does |
+|--------|-----------------|--------------|
+| **CLONE** | New repository | Full clone (all branches on first clone) |
+| **PULL** | Has changes | Updates only code in current branch |
+| **SKIP** | No changes | Skips the repository |
+
+#### Full Mode - `python app.py -r --all-branches`
+| Action | When it happens | What it does |
+|--------|-----------------|--------------|
+| **CLONE** | New repository | Full clone (all branches) |
+| **PULL** | Has changes | Updates code + all branches |
+| **SYNC** | No changes | Only syncs branches (fetch + create local branches) |
+| **CLONE (recover)** | Fetch failed | Re-clones the repository |
+
+### Status Meanings in Logs:
+
+| Status | Mode | Meaning |
+|--------|------|---------|
+| **CLONE** | Both | New repository - full clone |
+| **PULL** | Fast | Code update (current branch only) |
+| **PULL** | Full | Code + all branches update |
+| **SKIP** | Fast | Skipped - no changes |
+| **SYNC** | Full | Branch sync only - code hasn't changed |
+| **CLONE (recover)** | Full | Re-clone on error |
 
 ### Update Logic
 
@@ -208,12 +230,19 @@ Parsed arguments:
 4. **After pull**: verify repository health with `git rev-parse HEAD`
 5. **If corrupted**: automatic re-clone with retries
 
-### Branch Synchronization (Default Mode)
+### Branch Synchronization (Full Mode with `--all-branches`)
 
 - **CLONE**: creates local branches for all remote branches
 - **PULL**: fetches all branches + updates code + creates new branches
 - **SYNC**: fetches all branches + creates new branches + prunes deleted ones
 - **Pruning**: automatically removes local branches deleted on remote
+
+### Fast Mode (Default, without `--all-branches`)
+
+- **CLONE**: clones all branches (first time only)
+- **PULL**: updates only the current branch
+- **SKIP**: if no changes detected, no operation performed
+- **No branch sync after clone**: significantly faster for large repositories with many branches
 
 ## 🔒 Security
 
@@ -243,33 +272,37 @@ A: In `~/github_backup_repos_tools/[username]/config.json`
 **Q: How to cancel scheduled shutdown?**  
 A: `shutdown -c` (Linux/macOS) or `shutdown /a` (Windows)
 
-**Q: Fast mode still slow?**  
-A: Fast mode skips branch sync, but still does health checks and hash verification when needed
+**Q: Why do I see SKIP for some repos?**  
+A: In Fast Mode, repos without changes are skipped to save time.
+
+**Q: What's the difference between SYNC and PULL in Full Mode?**  
+A: PULL updates code + branches, SYNC only syncs branches (when code hasn't changed).
 
 ---
 
-## 🚀 What's New in 1.5.1
+## 🚀 What's New in v1.5.2
 
 - ✅ **New folder structure** - `~/github_backup_repos_tools/[username]/repositories/`
-- ✅ **All branches** - creates local branches for ALL remote branches
 - ✅ **Branch pruning** - automatically removes local branches deleted on remote
 - ✅ **No SSH required** - uses only HTTPS with token authentication
 - ✅ **Smart update** - two-stage verification (date + hash) before pull
 - ✅ **Health checks** - verifies repository integrity after each operation
 - ✅ **Automatic recovery** - re-clones corrupted repositories
 - ✅ **Exponential backoff** - up to 5 retries with increasing delays
-- ✅ **Fast mode** - new `--no-branches` flag for speed
+- ✅ **Two operation modes** - Fast (default) and Full (--all-branches)
+- ✅ **SKIP status** - clearly shows when repos are skipped (Fast Mode)
+- ✅ **SYNC status** - shows branch-only sync (Full Mode)
 
 ### Two Operation Modes
 
 | Mode | Command | Behavior | Use Case |
 |------|---------|----------|----------|
-| **Default** | `python app.py -r` | Full backup with ALL branches | Complete backup |
-| **Fast** | `python app.py -r --no-branches` | Code only, no branch sync | Quick daily sync |
+| **Fast (Default)** | `python app.py -r` | Code only, default branch after clone | Quick daily sync |
+| **Full** | `python app.py -r --all-branches` | Full backup with ALL branches + sync | Complete backup |
 
 ### Performance Comparison
-- **Default mode**: ~3-5 seconds per repository (with branches)
-- **Fast mode**: ~1-2 seconds per repository (code only)
+- **Fast mode (Default)**: ~1-2 seconds per repository (SKIP when no changes)
+- **Full mode**: ~3-5 seconds per repository (always syncs branches)
 - **SKIP** (no changes): virtually instant
 
 ---

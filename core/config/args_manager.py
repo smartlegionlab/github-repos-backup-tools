@@ -53,9 +53,9 @@ class ArgumentsManager:
             help="Timeout for git operations in seconds (default: 30)"
         )
         parser.add_argument(
-            "--no-branches",
+            "--all-branches",
             action="store_true",
-            help="Disable branch synchronization (faster, but only default branch)"
+            help="Enable full branch synchronization (slower, but clones ALL branches)"
         )
 
         power_group = parser.add_mutually_exclusive_group()
@@ -86,7 +86,10 @@ class ArgumentsManager:
         print("\nParsed arguments:")
         print(f"   Backup: {', '.join(backup_items) if backup_items else 'None'}")
         print(f"   Timeout: {args.timeout}s")
-        print(f"   Branches: {'✅ Yes' if not args.no_branches else '❌ No (fast mode)'}")
+        if args.all_branches:
+            print("   Branches: 🔄 ALL branches (slower mode)")
+        else:
+            print("   Branches: ⚡ Default branch only (fast mode)")
 
         if args.shutdown:
             print("   Shutdown: ✅ After completion")
