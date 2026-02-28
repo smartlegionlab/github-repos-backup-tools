@@ -31,7 +31,9 @@ class ReportGenerator:
         print(f"📁 Application directory: {ProjectPaths.get_app_dir()}")
         print(f"   └─ {self.username}/")
         print(f"       ├─ repositories/")
-        print(f"       └─ config.json")
+        print(f"       ├─ backups/")
+        print(f"       ├─ config.json")
+        print(f"       └─ user_info.json")
         print(
             f"\n⏱️  Started: {self.stats.start_time.strftime('%Y-%m-%d %H:%M:%S') if self.stats.start_time else 'N/A'}")
         print(f"⏱️  Finished: {self.stats.end_time.strftime('%Y-%m-%d %H:%M:%S') if self.stats.end_time else 'N/A'}")
