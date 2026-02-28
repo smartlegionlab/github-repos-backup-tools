@@ -3,8 +3,10 @@
 # Copyright (©) 2026, Alexander Suvorov. All rights reserved.
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
+import json
 import signal
 import sys
+from datetime import datetime
 
 from core.backup.archive_manager import ArchiveManager
 from core.backup.repo_manager import RepoManager
@@ -158,6 +160,8 @@ class AppManager:
 
         print(f"\n✅ Found {len(repos)} repositories total")
 
+        self.save_user_info()
+
         if backup_repos:
             repo_manager = RepoManager(
                 github_client=self.github_client,
@@ -181,3 +185,30 @@ class AppManager:
             archive_manager.create_archive()
 
         self._show_footer()
+
+    def save_user_info(self):
+        print("\n📄 Saving user information...")
+
+        url = f"https://api.github.com/user"
+        user_data = self.github_client._make_request(url)
+
+        if user_data:
+            user_info = {
+                "login": user_data.get('login'),
+                "name": user_data.get('name'),
+                "email": user_data.get('email'),
+                "bio": user_data.get('bio'),
+                "public_repos": user_data.get('public_repos'),
+                "private_repos": user_data.get('total_private_repos', 0),
+                "followers": user_data.get('followers'),
+                "following": user_data.get('following'),
+                "created_at": user_data.get('created_at'),
+                "updated_at": user_data.get('updated_at'),
+                "last_backup": datetime.now().isoformat()
+            }
+
+            user_info_path = ProjectPaths.get_user_dir(self.username) / "user_info.json"
+            with open(user_info_path, 'w', encoding='utf-8') as f:
+                json.dump(user_info, f, indent=2)
+
+            print(f"   ✅ User info saved: {user_info_path}")

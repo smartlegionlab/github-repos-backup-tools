@@ -12,6 +12,7 @@ class UserInfo:
     login: str
     name: Optional[str]
     email: Optional[str]
+    bio: Optional[str]
     public_repos: int
     private_repos: int
     followers: int
