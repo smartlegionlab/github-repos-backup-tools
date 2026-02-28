@@ -27,9 +27,12 @@ class ArchiveManager:
             return None
 
         try:
+            backups_dir = ProjectPaths.get_backups_dir(self.username)
+            backups_dir.mkdir(exist_ok=True)
+
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             archive_name = f"{self.username}_github_backup_{timestamp}"
-            archive_path = self.user_dir / f"{archive_name}.zip"
+            archive_path = backups_dir / f"{archive_name}.zip"
 
             print(f"   Creating archive: {archive_name}.zip")
             print(f"   From: {self.repos_dir}")

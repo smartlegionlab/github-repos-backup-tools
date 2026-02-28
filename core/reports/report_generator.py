@@ -87,8 +87,11 @@ class ReportGenerator:
         }
 
     def save(self, report_data: Dict[str, Any]) -> Path:
+        backups_dir = ProjectPaths.get_backups_dir(self.username)
+        backups_dir.mkdir(exist_ok=True)
+
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        report_path = self.user_dir / f"backup_report_{timestamp}.json"
+        report_path = backups_dir / f"backup_report_{timestamp}.json"
 
         with open(report_path, 'w', encoding='utf-8') as f:
             json.dump(report_data, f, indent=2, ensure_ascii=False)

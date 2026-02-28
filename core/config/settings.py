@@ -44,6 +44,10 @@ class ProjectPaths:
                     users.append(item.name)
         return users
 
+    @classmethod
+    def get_backups_dir(cls, username: str) -> Path:
+        return cls.get_user_dir(username) / "backups"
+
 
 class Config:
     APP_NAME = 'GitHub Repositories Backup Tools'
