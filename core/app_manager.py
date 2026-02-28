@@ -3,8 +3,8 @@
 # Copyright (©) 2026, Alexander Suvorov. All rights reserved.
 # https://github.com/smartlegionlab/
 # --------------------------------------------------------
-import os
 import signal
+import sys
 
 from core.backup.archive_manager import ArchiveManager
 from core.backup.repo_manager import RepoManager
@@ -25,11 +25,14 @@ class AppManager:
         self.github_client = None
         self.username = None
         self.stats = BackupStats()
+        self.original_sigint = None
 
     def _signal_handler(self, signum, frame):
         print(f"\n\n⚠️ Received Ctrl+C - exiting immediately")
         self._show_footer()
-        os._exit(1)
+        if self.original_sigint:
+            signal.signal(signal.SIGINT, self.original_sigint)
+        sys.exit(1)
 
     def _show_header(self):
         print()
@@ -72,6 +75,7 @@ class AppManager:
             return False
 
     def run(self):
+        self.original_sigint = signal.getsignal(signal.SIGINT)
         signal.signal(signal.SIGINT, self._signal_handler)
 
         self._show_header()
