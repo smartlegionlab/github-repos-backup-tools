@@ -10,7 +10,7 @@ from typing import Optional, List
 
 
 class ProjectPaths:
-    APP_NAME = "github_backup_repos_tools"
+    APP_NAME = "github_repos_backup_tools"
 
     @classmethod
     def get_app_dir(cls) -> Path:

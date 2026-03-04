@@ -1,4 +1,4 @@
-# GitHub Repositories Backup Tools <sup>v1.6.0</sup>
+# GitHub Repositories Backup Tools <sup>v1.6.1</sup>
 
 A professional solution for automatic cloning and backup of all your GitHub repositories.
 
@@ -44,7 +44,7 @@ A professional solution for automatic cloning and backup of all your GitHub repo
 ## 📁 Structure
 
 ```
-~/github_backup_repos_tools/              # Main application folder
+~/github_repos_backup_tools/              # Main application folder
 └── username/                              # Your GitHub username
     ├── repositories/                       # All cloned repositories
     │   ├── repo1/                          # Repository copy
@@ -137,7 +137,7 @@ Parsed arguments:
    Power: ❌ No action
 
 📁 Application Setup
-   Application directory: /home/user/github_backup_repos_tools
+   Application directory: /home/user/github_repos_backup_tools
 
 🌐 Network Check
 ✅ Internet connection OK
@@ -152,10 +152,10 @@ Parsed arguments:
    ✅ Found 52 repositories
 
 📄 Saving user information...
-   ✅ User info saved: /home/user/github_backup_repos_tools/smartlegionlab/user_info.json
+   ✅ User info saved: /home/user/github_repos_backup_tools/smartlegionlab/user_info.json
 
-📁 Backup location: /home/user/github_backup_repos_tools/smartlegionlab
-   Repositories: /home/user/github_backup_repos_tools/smartlegionlab/repositories
+📁 Backup location: /home/user/github_repos_backup_tools/smartlegionlab
+   Repositories: /home/user/github_repos_backup_tools/smartlegionlab/repositories
 
 📂 Processing 52 repositories...
    Mode: ⚡ Fast mode (default branch only)
@@ -167,7 +167,7 @@ Parsed arguments:
 📋 BACKUP REPORT
 ============================================================
 👤 User: smartlegionlab
-📁 Application directory: /home/user/github_backup_repos_tools
+📁 Application directory: /home/user/github_repos_backup_tools
    └─ smartlegionlab/
        ├─ repositories/
        ├─ backups/
@@ -193,12 +193,12 @@ Parsed arguments:
 ✅ ALL REPOSITORIES BACKED UP SUCCESSFULLY!
 ============================================================
 
-📄 JSON report saved: /home/user/github_backup_repos_tools/smartlegionlab/backups/backup_report_2026-02-27_17-24-20.json
+📄 JSON report saved: /home/user/github_repos_backup_tools/smartlegionlab/backups/backup_report_2026-02-27_17-24-20.json
 
 📦 Archive Creation
    Creating archive: smartlegionlab_github_backup_2026-02-27_17-24-20.zip
-   From: /home/user/github_backup_repos_tools/smartlegionlab/repositories
-   To: /home/user/github_backup_repos_tools/smartlegionlab/backups/smartlegionlab_github_backup_2026-02-27_17-24-20.zip
+   From: /home/user/github_repos_backup_tools/smartlegionlab/repositories
+   To: /home/user/github_repos_backup_tools/smartlegionlab/backups/smartlegionlab_github_backup_2026-02-27_17-24-20.zip
    ✅ Archive created successfully!
    📊 Size: 15.19 MB
 ------------------------------------------------------------------------------------
@@ -278,7 +278,7 @@ This keeps your user folder clean and makes it easy to find all backups.
 
 ## 🔒 Security
 
-- Token stored in `~/github_backup_repos_tools/[username]/config.json`
+- Token stored in `~/github_repos_backup_tools/[username]/config.json`
 - Uses HTTPS with token in URL (not transmitted in plain text)
 - Path traversal attack protection
 - No telemetry or third-party data transmission
@@ -300,10 +300,10 @@ A: Verify token has `repo` and `read:org` permissions. Use `-t` to update.
 A: Increase timeout: `--timeout 60`
 
 **Q: Where is token stored?**  
-A: In `~/github_backup_repos_tools/[username]/config.json`
+A: In `~/github_repos_backup_tools/[username]/config.json`
 
 **Q: Where are backups stored?**  
-A: All archives and reports are in `~/github_backup_repos_tools/[username]/backups/`
+A: All archives and reports are in `~/github_repos_backup_tools/[username]/backups/`
 
 **Q: What's in user_info.json?**  
 A: Your GitHub profile information - login, name, email, repo counts, followers, etc.
@@ -319,12 +319,12 @@ A: PULL updates code + branches, SYNC only syncs branches (when code hasn't chan
 
 ---
 
-## 🚀 What's New in v1.6.0
+## 🚀 What's New in v1.6.1
 
 - ✅ **User profile export** - saves GitHub user info to `user_info.json`
 - ✅ **Organized backups** - all archives and reports in `backups/` folder
 - ✅ **Cleaner archives** - ZIP contains only repositories, no configs or tokens
-- ✅ **Improved structure** - `~/github_backup_repos_tools/[username]/backups/`
+- ✅ **Improved structure** - `~/github_repos_backup_tools/[username]/backups/`
 - ✅ **Branch pruning** - automatically removes local branches deleted on remote
 - ✅ **No SSH required** - uses only HTTPS with token authentication
 - ✅ **Smart update** - two-stage verification (date + hash) before pull
